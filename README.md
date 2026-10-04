@@ -1,5 +1,8 @@
 # Blanks — paper trading for Terminal & Axiom
 
+> [!IMPORTANT]
+> **This repository is for checking the code, not for installing Blanks.** Install it only from the [Chrome Web Store](https://chromewebstore.google.com/detail/mhegkceocponjlnnbinngggdmniigkgo). A copy loaded by hand in developer mode gets no automatic updates, cannot link a Google account, and keeps its data apart from the Store version. If anyone sends you Blanks as a .zip, a .crx or a folder to load, it is not official.
+
 Blanks is a Chrome extension that puts a paper-trading desk on top of [Terminal](https://trade.padre.gg) and [Axiom](https://axiom.trade): real prices, real fees, your fills on the real candles — with fake money.
 
 - Website: https://trade-blanks.com
