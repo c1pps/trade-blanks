@@ -1,0 +1,1911 @@
+importScripts("engine.js");
+const E = self.__PAPR_ENGINE,
+  KEY = "papr.v2",
+  QUOTE_MS = 600,
+  MAX_WATCH = 25,
+  DEF_STATE = () => ({
+    v: 2,
+    balanceSol: 10,
+    balances: { ETH: E.DEFAULTS.startBalanceEth, BNB: E.DEFAULTS.startBalanceBnb },
+    settings: Object.assign({}, E.DEFAULTS),
+    positions: {},
+    orders: [],
+    trades: [],
+    fills: {},
+    track: { feed: [], byMint: {}, outbox: [], profiles: {} },
+    ui: { x: 16, y: 96, w: 348, collapsed: !1, tab: "trade" },
+    tokenStats: {},
+    alerts: [],
+    wallets: null,
+    walletId: "main",
+    badges: {},
+    replays: [],
+    alertLog: [],
+    walletSel: [],
+  });
+/* Le bilan de chaque token trade, garde pour toujours (l'historique, lui, est
+   plafonne a 2000 trades) : la rangee du bas du panneau le montre quand on revient
+   sur un token, meme des annees apres. */
+function addTokenStat(st, t) {
+  if (!t || !t.mint) return;
+  const o = st[t.mint] || (st[t.mint] = { inv: 0, out: 0, fees: 0, n: 0, first: t.openedAt || t.closedAt || Date.now(), last: 0, sym: t.symbol || "", pair: t.pair || "", asset: t.asset || "SOL" });
+  o.inv += +t.investedSol || 0;
+  o.out += +t.returnedSol || 0;
+  o.fees += +t.feesSol || 0;
+  o.n += 1;
+  o.last = Math.max(o.last || 0, t.closedAt || 0);
+  if (t.symbol) o.sym = t.symbol;
+  if (t.pair) o.pair = t.pair;
+}
+let S = null,
+  ready = null;
+const quotes = new Map(),
+  resolved = new Map(),
+  unresolved = new Map(),
+  padre = new Map(),
+  live = new Map();
+let lastQb = null;
+const ports = new Set(),
+  activePair = new Map();
+let solUsd = 0,
+  solTs = 0;
+const SOL_KEY = "papr.solUsd";
+try {
+  chrome.storage.local.get(SOL_KEY, (e) => {
+    const t = e && e[SOL_KEY];
+    !solUsd && t && t.p > 0 && ((solUsd = t.p), (solTs = t.ts || 0));
+  });
+} catch (e) {}
+let solSaveT = null;
+function setSolUsd(e) {
+  e > 0 &&
+    ((solUsd = e),
+    (solTs = Date.now()),
+    (PX.SOL = e),
+    clearTimeout(solSaveT),
+    (solSaveT = setTimeout(() => {
+      try {
+        chrome.storage.local.set({ [SOL_KEY]: { p: solUsd, ts: solTs } });
+      } catch (e) {}
+    }, 2e3)));
+}
+const PX = { SOL: 0, ETH: 0, BNB: 0 },
+  PX_KEY = "papr.px";
+try {
+  chrome.storage.local.get(PX_KEY, (e) => {
+    const t = e && e[PX_KEY];
+    if (t) for (const e of ["ETH", "BNB"]) !(PX[e] > 0) && t[e] > 0 && (PX[e] = t[e]);
+  });
+} catch (e) {}
+let pxSaveT = null;
+function setPx(e, t) {
+  if (t > 0) {
+    if ("SOL" === e) return setSolUsd(t);
+    ((PX[e] = t),
+      clearTimeout(pxSaveT),
+      (pxSaveT = setTimeout(() => {
+        try {
+          chrome.storage.local.set({ [PX_KEY]: { ETH: PX.ETH, BNB: PX.BNB, ts: Date.now() } });
+        } catch (e) {}
+      }, 2e3)));
+  }
+}
+function px(e) {
+  return "SOL" === e ? solUsd : PX[e] || 0;
+}
+let loopId = null,
+  lastTick = 0;
+const evmBusy = new Set();
+function migrate(e) {
+  const t = DEF_STATE();
+  if (!e || "object" != typeof e) return t;
+  if (
+    ("number" == typeof e.balanceSol && isFinite(e.balanceSol) && (t.balanceSol = e.balanceSol),
+    e.balances && "object" == typeof e.balances)
+  )
+    for (const s of ["ETH", "BNB"]) "number" == typeof e.balances[s] && isFinite(e.balances[s]) && (t.balances[s] = e.balances[s]);
+  if ((e.settings && "object" == typeof e.settings && Object.assign(t.settings, e.settings), Array.isArray(t.settings.follow))) {
+    const e = new Set();
+    t.settings.follow = t.settings.follow.filter((t) => {
+      const s = String(t || "").toLowerCase();
+      return !(!s || e.has(s)) && (e.add(s), !0);
+    });
+  }
+  (e.positions && "object" == typeof e.positions && (t.positions = e.positions),
+    Array.isArray(e.orders) && (t.orders = e.orders),
+    Array.isArray(e.trades) && (t.trades = e.trades),
+    Array.isArray(e.alerts) && (t.alerts = e.alerts),
+    e.wallets && "object" == typeof e.wallets && (t.wallets = e.wallets),
+    "string" == typeof e.walletId && (t.walletId = e.walletId),
+    e.badges && "object" == typeof e.badges && (t.badges = e.badges),
+    Array.isArray(e.replays) && (t.replays = e.replays),
+    Array.isArray(e.alertLog) && (t.alertLog = e.alertLog),
+    Array.isArray(e.walletSel) && (t.walletSel = e.walletSel),
+    e.tokenStats && "object" == typeof e.tokenStats
+      ? (t.tokenStats = e.tokenStats)
+      : t.trades.slice().reverse().forEach((x) => addTokenStat(t.tokenStats, x)),
+    e.fills && "object" == typeof e.fills && (t.fills = e.fills),
+    e.ui && "object" == typeof e.ui && Object.assign(t.ui, e.ui),
+    e.track && "object" == typeof e.track && Object.assign(t.track, e.track),
+    Array.isArray(e.buyPresets) && !e.settings && (t.settings.buyPresets = e.buyPresets),
+    Array.isArray(e.sellPresets) && !e.settings && (t.settings.sellPresets = e.sellPresets));
+  const s = [0.1, 0.25, 0.5, 1],
+    o = [25, 50, 75, 100],
+    a = (e, t) => Array.isArray(e) && e.length === t.length && e.every((e, s) => +e === t[s]);
+  if (
+    (a(t.settings.buyPresets, s) && (t.settings.buyPresets = E.DEFAULTS.buyPresets.slice()),
+    a(t.settings.sellPresets, o) && (t.settings.sellPresets = E.DEFAULTS.sellPresets.slice()),
+    Array.isArray(t.settings.slots) && 3 === t.settings.slots.length)
+  ) {
+    const e = t.settings.slots[0];
+    (e && a(e.buy, s) && (e.buy = E.DEFAULTS.buyPresets.slice()), e && a(e.sell, o) && (e.sell = E.DEFAULTS.sellPresets.slice()));
+  }
+  const n = [5, 10, 25, 50, 75, 90, 95, 100];
+  a(t.settings.sellPresets, n) && (t.settings.sellPresets = E.DEFAULTS.sellPresets.slice());
+  for (const e of ["slots", "slotsEth", "slotsBnb"]) {
+    const s = t.settings[e];
+    Array.isArray(s) &&
+      s.forEach((e) => {
+        e && a(e.sell, n) && (e.sell = E.DEFAULTS.sellPresets.slice());
+      });
+  }
+  return ((t.v = DEF_STATE().v), t);
+}
+const BAK = KEY + ".bak";
+let bakTs = 0;
+function backup() {
+  const e = Date.now();
+  if (!(e - bakTs < 6e4)) {
+    bakTs = e;
+    try {
+      chrome.storage.local.set({ [BAK]: { ts: e, state: S } });
+    } catch (e) {}
+  }
+}
+function loadState() {
+  return (
+    ready ||
+    ((ready = new Promise((e) => {
+      chrome.storage.local.get([KEY, BAK], (t) => {
+        const s = t && t[KEY],
+          o = t && t[BAK],
+          a = (e) => e && "object" == typeof e && ("number" == typeof e.balanceSol || e.positions || e.trades),
+          n = () => {
+            for (const e of S.orders || []) ((e.firing = !1), (e.hits = 0));
+            e(S);
+          };
+        a(s)
+          ? ((S = migrate(s)), n())
+          : o && a(o.state)
+            ? ((S = migrate(o.state)), n())
+            : syncRestore().then((e) => {
+                if (e && a(e)) {
+                  const t = DEF_STATE();
+                  ((S = migrate(Object.assign(t, e, { settings: Object.assign({}, t.settings, e.settings || {}) }))),
+                    chrome.storage.local.set({ [KEY]: S }),
+                    (restoredFromSync = { ts: e.ts, trades: (e.trades || []).length }));
+                } else S = DEF_STATE();
+                n();
+              });
+      });
+    })),
+    ready)
+  );
+}
+let restoredFromSync = null,
+  saveT = null;
+function save() {
+  (clearTimeout(saveT),
+    (saveT = setTimeout(() => {
+      (chrome.storage.local.set({ [KEY]: S }), backup(), syncSoon());
+    }, 120)));
+}
+const SYNC_KEY = "papr.sync",
+  SYNC_CHUNK = 7e3,
+  SYNC_MAX = 98e3;
+let syncT = null,
+  syncLast = 0;
+function compactState() {
+  const e = Object.assign({}, S.settings);
+  for (const t of ["shareBg", "kcBg", "sndBuy", "sndSell"]) delete e[t];
+  (e.card && e.card.bg && ((e.card = Object.assign({}, e.card)), delete e.card.bg),
+    e.account && e.account.avatar && ((e.account = Object.assign({}, e.account)), delete e.account.avatar));
+  const t = {};
+  for (const e in S.positions) S.fills[e] && (t[e] = S.fills[e].slice(-40));
+  return {
+    v: S.v,
+    ts: Date.now(),
+    balanceSol: S.balanceSol,
+    balances: S.balances,
+    positions: S.positions,
+    orders: S.orders,
+    trades: S.trades,
+    fills: t,
+    settings: e,
+    ui: S.ui || null,
+  };
+}
+function syncSoon() {
+  clearTimeout(syncT);
+  const e = Math.max(3e3, 3e4 - (Date.now() - syncLast));
+  syncT = setTimeout(syncNow, e);
+}
+function syncNow() {
+  if (S && chrome.storage.sync) {
+    syncLast = Date.now();
+    try {
+      const e = compactState();
+      let t = JSON.stringify(e);
+      for (; t.length > 98e3 && e.trades.length > 20;)
+        ((e.trades = e.trades.slice(0, Math.floor(0.8 * e.trades.length))), (t = JSON.stringify(e)));
+      if ((t.length > 98e3 && ((e.fills = {}), (t = JSON.stringify(e))), t.length > 98e3)) return;
+      const s = {};
+      let o = 0;
+      for (let e = 0; e < t.length; e += 7e3) s[SYNC_KEY + "." + o++] = t.slice(e, e + 7e3);
+      ((s[SYNC_KEY] = { n: o, ts: e.ts, trades: e.trades.length, bal: e.balanceSol }),
+        chrome.storage.sync.get(null, (e) => {
+          const t = Object.keys(e || {}).filter((e) => e.startsWith(SYNC_KEY + ".") && !(e in s));
+          chrome.storage.sync.set(s, () => {
+            (chrome.runtime.lastError, t.length && chrome.storage.sync.remove(t));
+          });
+        }));
+    } catch (e) {}
+  }
+}
+function syncRestore() {
+  return new Promise((e) => {
+    if (!chrome.storage.sync) return e(null);
+    chrome.storage.sync.get(null, (t) => {
+      const s = t && t[SYNC_KEY];
+      if (!(s && s.n > 0)) return e(null);
+      let o = "";
+      for (let a = 0; a < s.n; a++) {
+        const s = t[SYNC_KEY + "." + a];
+        if ("string" != typeof s) return e(null);
+        o += s;
+      }
+      try {
+        e(JSON.parse(o));
+      } catch (t) {
+        e(null);
+      }
+    });
+  });
+}
+async function getJSON(e, t) {
+  const s = new AbortController(),
+    o = setTimeout(() => s.abort(), t || 4e3);
+  try {
+    const t = await fetch(e, { cache: "no-store", signal: s.signal });
+    if (!t.ok) throw new Error("HTTP " + t.status);
+    return await t.json();
+  } finally {
+    clearTimeout(o);
+  }
+}
+function timeBox(e, t) {
+  return Promise.race([e.catch(() => null), new Promise((e) => setTimeout(() => e(null), t))]);
+}
+const SOL_MINT = "So11111111111111111111111111111111111111112",
+  PUMP_K = 3219e7;
+async function fetchJup(e) {
+  if (!e.length) return {};
+  return (await getJSON("https://lite-api.jup.ag/price/v3?ids=" + e.slice(0, 50).join(","), 4e3)) || {};
+}
+function onCurve(e, t) {
+  return e > 0 && t > 0 && Math.abs(Math.sqrt(PUMP_K * e) / t - 1) < 0.08;
+}
+const chains = new Map(),
+  kinds = new Map();
+function chainOf(e) {
+  if (!e) return "solana";
+  const t = chains.get(e);
+  if (t) return t;
+  if (S) {
+    for (const t in S.positions) if (S.positions[t].pair === e && S.positions[t].chain) return S.positions[t].chain;
+    for (const t of S.orders || []) if (t.pair === e && t.chain) return t.chain;
+  }
+  return "solana";
+}
+function assetAt(e) {
+  return E.assetOf(chainOf(e));
+}
+function pxAt(e) {
+  return px(assetAt(e));
+}
+function isEvm(e) {
+  return E.chainInfo(chainOf(e)).evm;
+}
+async function fetchPairs(e, t) {
+  if (!e.length) return [];
+  const s = E.chainInfo(t || "solana").dex,
+    o = await getJSON("https://api.dexscreener.com/latest/dex/pairs/" + s + "/" + e.slice(0, 30).join(","));
+  return o.pairs || (o.pair ? [o.pair] : []);
+}
+async function fetchByToken(e) {
+  return await getJSON("https://api.dexscreener.com/latest/dex/tokens/" + encodeURIComponent(e));
+}
+function pickDeepest(e, t) {
+  const s = E.chainInfo(t || "solana").dex,
+    o = ((e && e.pairs) || []).filter((e) => e && e.chainId === s && e.pairAddress);
+  return o.length
+    ? (o.sort((e, t) => ((t.liquidity && t.liquidity.usd) || t.marketCap || 0) - ((e.liquidity && e.liquidity.usd) || e.marketCap || 0)),
+      o[0])
+    : null;
+}
+async function refreshOne(e) {
+  if (!e) return null;
+  const t = chainOf(e),
+    s = resolved.get(e) || e,
+    o = "token" === kinds.get(e);
+  if (!o)
+    try {
+      const o = await fetchPairs([s], t);
+      if (o[0]) return (store(e, o[0]), o[0]);
+    } catch (e) {
+      return null;
+    }
+  try {
+    const a = pickDeepest(await fetchByToken(e), t);
+    if (a) return (store(e, a), a);
+    if (o) {
+      const o = await fetchPairs([s], t);
+      if (o[0]) return (store(e, o[0]), o[0]);
+    }
+    unresolved.set(e, Date.now());
+  } catch (e) {}
+  return null;
+}
+function store(e, t) {
+  (quotes.set(e, { pair: t, ts: Date.now() }), resolved.set(e, t.pairAddress), unresolved.delete(e));
+}
+const mints = new Map();
+function mintFor(e) {
+  const t = padre.get(e);
+  if (t && t.mint) return t.mint;
+  const s = mints.get(e);
+  if (s) return s;
+  const o = quotes.get(e);
+  if (o && o.pair.baseToken && o.pair.baseToken.address) return o.pair.baseToken.address;
+  if (S) {
+    for (const t in S.positions) if (S.positions[t].pair === e) return (mints.set(e, t), t);
+    for (const t of S.orders || []) if (t.pair === e && t.mint) return (mints.set(e, t.mint), t.mint);
+  }
+  return e;
+}
+const jup = new Map();
+function jupOf(e) {
+  const t = jup.get(e);
+  return t && Date.now() - t.ts < 15e3 ? t : null;
+}
+function watchedPairs() {
+  const e = new Set();
+  for (const t of activePair.values()) t && e.add(t);
+  for (const t in S.positions) S.positions[t].pair && e.add(S.positions[t].pair);
+  for (const t of S.orders) t.pair && e.add(t.pair);
+  if (self.BX) for (const t of BX.watch()) t && e.add(t);
+  return [...e].slice(0, 25);
+}
+const SOL_SOURCES = [
+  { name: "jup", url: "https://lite-api.jup.ag/price/v3?ids=" + SOL_MINT, pick: (e) => e && e[SOL_MINT] && +e[SOL_MINT].usdPrice },
+  { name: "coinbase", url: "https://api.coinbase.com/v2/prices/SOL-USD/spot", pick: (e) => e && e.data && +e.data.amount },
+  { name: "binance", url: "https://api.binance.com/api/v3/ticker/price?symbol=SOLUSDT", pick: (e) => e && +e.price },
+  {
+    name: "kraken",
+    url: "https://api.kraken.com/0/public/Ticker?pair=SOLUSD",
+    pick: (e) => {
+      const t = e && e.result,
+        s = t && Object.keys(t)[0];
+      return s && t[s].c && +t[s].c[0];
+    },
+  },
+  {
+    name: "coingecko",
+    url: "https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd",
+    pick: (e) => e && e.solana && +e.solana.usd,
+  },
+];
+let solSrc = null;
+const ALT_SOURCES = {
+    ETH: [
+      { name: "coinbase", url: "https://api.coinbase.com/v2/prices/ETH-USD/spot", pick: (e) => e && e.data && +e.data.amount },
+      { name: "binance", url: "https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT", pick: (e) => e && +e.price },
+      {
+        name: "kraken",
+        url: "https://api.kraken.com/0/public/Ticker?pair=ETHUSD",
+        pick: (e) => {
+          const t = e && e.result,
+            s = t && Object.keys(t)[0];
+          return s && t[s].c && +t[s].c[0];
+        },
+      },
+      {
+        name: "coingecko",
+        url: "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd",
+        pick: (e) => e && e.ethereum && +e.ethereum.usd,
+      },
+    ],
+    BNB: [
+      { name: "coinbase", url: "https://api.coinbase.com/v2/prices/BNB-USD/spot", pick: (e) => e && e.data && +e.data.amount },
+      { name: "binance", url: "https://api.binance.com/api/v3/ticker/price?symbol=BNBUSDT", pick: (e) => e && +e.price },
+      {
+        name: "coingecko",
+        url: "https://api.coingecko.com/api/v3/simple/price?ids=binancecoin&vs_currencies=usd",
+        pick: (e) => e && e.binancecoin && +e.binancecoin.usd,
+      },
+    ],
+  },
+  altTs = { ETH: 0, BNB: 0 },
+  altBusy = { ETH: !1, BNB: !1 };
+async function warmPx(e, t) {
+  if ("SOL" === e) return warmSol();
+  if (ALT_SOURCES[e] && !altBusy[e] && !(!t && PX[e] > 0 && Date.now() - altTs[e] < 6e4)) {
+    ((altBusy[e] = !0), (altTs[e] = Date.now()));
+    try {
+      for (const t of ALT_SOURCES[e])
+        try {
+          const s = t.pick(await getJSON(t.url, 3e3));
+          if (s > 0 && isFinite(s)) {
+            setPx(e, s);
+            break;
+          }
+        } catch (e) {}
+    } finally {
+      altBusy[e] = !1;
+    }
+  }
+}
+let solWarm = null;
+function warmSol() {
+  return solWarm || solUsd > 0
+    ? solWarm || Promise.resolve()
+    : ((solWarm = (async () => {
+        for (let e = 0; e < 4 && !(solUsd > 0); e++) {
+          for (const e of SOL_SOURCES)
+            try {
+              const t = e.pick(await getJSON(e.url, 3e3));
+              if (t > 0 && isFinite(t)) {
+                (setSolUsd(t), (solSrc = e.name));
+                break;
+              }
+            } catch (e) {}
+          if (solUsd > 0) break;
+          await new Promise((t) => setTimeout(t, 600 * (e + 1)));
+        }
+        solWarm = null;
+      })()),
+      solWarm);
+}
+async function freshen(e) {
+  const t = mintFor(e);
+  if (isEvm(e)) await Promise.all([timeBox(warmPx(assetAt(e)), 1500), timeBox(refreshOne(e), 2500)]);
+  else {
+    try {
+      const e = await fetchJup([t]),
+        s = Date.now();
+      for (const t in e) e[t] && e[t].usdPrice > 0 && jup.set(t, Object.assign({ ts: s }, e[t]));
+    } catch (e) {}
+    if (!jupOf(t))
+      try {
+        const s = pickDeepest(await fetchByToken(t), "solana");
+        s && (quotes.set(e, { pair: s, ts: Date.now() }), mints.set(e, t));
+      } catch (e) {}
+  }
+}
+async function priceReady(e) {
+  const t = mintFor(e);
+  if (isEvm(e)) {
+    const t = assetAt(e);
+    px(t) > 0 || (await timeBox(warmPx(t, !0), 2e3));
+    for (let t = 0; t < 3 && !quoteOf(e); t++) await timeBox(refreshOne(e), 2e3);
+    return;
+  }
+  if (
+    (solUsd > 0 || (await timeBox(warmSol(), 1500)),
+    await timeBox(
+      (async () => {
+        const e = await fetchJup([t, SOL_MINT]),
+          s = Date.now();
+        for (const t in e) e[t] && e[t].usdPrice > 0 && jup.set(t, Object.assign({ ts: s }, e[t]));
+        const o = jup.get(SOL_MINT);
+        o && o.usdPrice > 0 && setSolUsd(o.usdPrice);
+      })(),
+      800,
+    ),
+    quoteOf(e) ||
+      (await timeBox(
+        (async () => {
+          const s = pickDeepest(await fetchByToken(t), "solana");
+          s && (quotes.set(e, { pair: s, ts: Date.now() }), mints.set(e, t));
+        })(),
+        1200,
+      )),
+    !quoteOf(e))
+  )
+    for (let s = 0; s < 4 && !quoteOf(e); s++)
+      await timeBox(
+        (async () => {
+          const e = await fetchJup([t, SOL_MINT]),
+            s = Date.now();
+          for (const t in e) e[t] && e[t].usdPrice > 0 && jup.set(t, Object.assign({ ts: s }, e[t]));
+          const o = jup.get(SOL_MINT);
+          o && o.usdPrice > 0 && setSolUsd(o.usdPrice);
+        })(),
+        400,
+      );
+}
+warmSol();
+const LIVE_MAX_AGE = 3e3,
+  LIVE_BAND = 1.3;
+function liveOf(e, t) {
+  const s = live.get(e);
+  if (!s || !(s.px > 0) || Date.now() - s.ts > 3e3) return 0;
+  const o = (Array.isArray(t) ? t : [t]).filter((e) => e > 0);
+  return o.length && !o.some((e) => s.px <= e * LIVE_BAND && s.px >= e / LIVE_BAND) ? 0 : s.px;
+}
+function padreOf(e) {
+  const t = padre.get(e);
+  return t && Date.now() - t.ts < 8e3 && (t.price > 0 || t.mcap > 0) ? t : null;
+}
+function quoteEvm(e) {
+  const t = chainOf(e),
+    s = E.chainInfo(t),
+    o = s.asset,
+    a = px(o),
+    n = quotes.get(e) ? quotes.get(e).pair : null,
+    r = padreOf(e),
+    i = n ? parseFloat(n.priceUsd) : 0,
+    c = r && r.price > 0 ? r.price : 0,
+    l = !(!r || !r.coarse),
+    d = c > 0 && !(l && i > 0);
+  let u = d ? c : i > 0 ? i : c;
+  const p = liveOf(e, [c, i, u]);
+  if ((p > 0 && (u = p), !(u > 0) && r && r.mcap > 0 && n)) {
+    const e = supplyOf(n);
+    e > 0 && (u = r.mcap / e);
+  }
+  if (!(u > 0 && a > 0)) return n || null;
+  const f = (n && n.baseToken && n.baseToken.address) || mintFor(e),
+    m = (r && r.symbol) || (n && n.baseToken && n.baseToken.symbol) || "?",
+    S = n ? supplyOf(n) : 0,
+    y = S > 0 ? u * S : r && r.mcap > 0 ? r.mcap : n ? n.marketCap : void 0;
+  return {
+    chainId: s.dex,
+    dexId: (n && n.dexId) || "uniswap",
+    pairAddress: (n && n.pairAddress) || e,
+    baseToken: { address: f, symbol: m },
+    quoteToken: { address: (n && n.quoteToken && n.quoteToken.address) || "", symbol: o },
+    priceUsd: String(u),
+    priceNative: String(u / a),
+    liquidity: n ? n.liquidity : void 0,
+    fdv: y,
+    marketCap: y,
+    _src: p > 0 ? "live" : d ? "page" : "dex",
+  };
+}
+function quoteOf(e) {
+  if (isEvm(e)) return quoteEvm(e);
+  const t = padreOf(e),
+    s = jupOf(mintFor(e)),
+    o = quotes.get(e) ? quotes.get(e).pair : null,
+    a = 1073e6,
+    n = 1e9,
+    r = t && t.supply > 0 ? t.supply : t && (t.curve || /pump$/i.test(mintFor(e) || "")) ? a : t && t.lp ? n : 0,
+    i = t && t.price > 0 ? t.price : t && t.mcap > 0 && r > 0 ? t.mcap / r : 0,
+    c = s && s.usdPrice > 0 ? s.usdPrice : 0,
+    l = o ? parseFloat(o.priceUsd) : 0,
+    d = i > 0 && !(t && t.coarse && t.price === i && l > 0);
+  let u = c > 0 ? c : d ? i : l > 0 ? l : i;
+  c > 0 && i > 0 && (c > i * LIVE_BAND || c < i / LIVE_BAND) && (u = i);
+  const p = liveOf(e, [i, c, u]);
+  if ((p > 0 && (u = p), !(u > 0) && t && t.mcap > 0)) {
+    const s = /pump$/i.test(mintFor(e) || "") || /pump$/i.test(e || ""),
+      o = t.supply > 0 ? t.supply : t.curve || s ? a : t.lp ? n : 0;
+    o > 0 && (u = t.mcap / o);
+  }
+  if (!(u > 0 && solUsd > 0)) return o || null;
+  const f = u / solUsd,
+    m = s && s.liquidity > 0 ? s.liquidity / solUsd : t && t.liq > 0 ? t.liq / 2 / solUsd : 0,
+    S = onCurve(f, m) || (!m && t && t.curve),
+    y = mintFor(e),
+    g = (t && t.symbol) || (o && o.baseToken && o.baseToken.symbol) || "?",
+    h = t && t.supply > 0 ? t.supply : t && t.mcap > 0 && t.price > 0 ? t.mcap / t.price : r > 0 ? r : S ? 1e9 : 0,
+    b = h > 0 ? u * h : t && t.mcap > 0 ? t.mcap : o ? o.marketCap : void 0;
+  return {
+    chainId: "solana",
+    dexId: S ? "pumpfun" : (o && o.dexId) || "raydium",
+    pairAddress: (o && o.pairAddress) || e,
+    baseToken: { address: y, symbol: g },
+    quoteToken: { address: SOL_MINT, symbol: "SOL" },
+    priceUsd: String(u),
+    priceNative: String(f),
+    liquidity: m > 0 ? { usd: m * solUsd * 2 } : o ? o.liquidity : void 0,
+    fdv: b,
+    marketCap: b,
+    _src: p > 0 ? "live" : s ? "jup" : t ? "padre" : "dex",
+  };
+}
+function mktOf(e) {
+  const t = quoteOf(e),
+    s = chainOf(e);
+  return t ? E.marketState(t, px(E.assetOf(s)), s) : null;
+}
+async function tick() {
+  ((lastTick = Date.now()), await loadState(), ticks || (await loadTicks()), solUsd > 0 || warmSol());
+  const e = watchedPairs(),
+    t = new Set([SOL_MINT]);
+  for (const s of e) isEvm(s) || t.add(mintFor(s));
+  const s = new Set();
+  for (const t of e) s.add(assetAt(t));
+  for (const e of s) "SOL" !== e && warmPx(e);
+  try {
+    const e = await fetchJup([...t]),
+      s = Date.now();
+    for (const t in e) e[t] && e[t].usdPrice > 0 && jup.set(t, Object.assign({ ts: s }, e[t]));
+    const o = jup.get(SOL_MINT);
+    o && o.usdPrice > 0 && setSolUsd(o.usdPrice);
+  } catch (e) {}
+  for (const t of e) {
+    if (!isEvm(t)) continue;
+    const e = quotes.get(t);
+    (e && Date.now() - e.ts < 5e3) ||
+      evmBusy.has(t) ||
+      (evmBusy.add(t),
+      timeBox(refreshOne(t), 4e3).then((e) => {
+        (evmBusy.delete(t), e && e.baseToken && mints.set(t, e.baseToken.address));
+      }));
+  }
+  for (const t of e) {
+    if (isEvm(t)) continue;
+    const e = padreOf(t),
+      s = quotes.get(t),
+      o = (e && e.symbol) || (s && s.pair.baseToken && s.pair.baseToken.symbol);
+    if (!((!!quoteOf(t) && o) || s || unresolved.get(t) > Date.now() - 3e4)) {
+      timeBox(refreshOne(t), 3e3).then((e) => {
+        e && e.baseToken && mints.set(t, e.baseToken.address);
+      });
+      break;
+    }
+  }
+  for (const t of [...quotes.keys()]) e.includes(t) || (quotes.delete(t), resolved.delete(t));
+  for (const t of [...unresolved.keys()]) (!e.includes(t) || padreOf(t) || jupOf(mintFor(t))) && unresolved.delete(t);
+  if ((checkOrders(), self.BX && BX.tick(), ticks)) {
+    for (const e in S.positions) {
+      const t = S.positions[e];
+      if (!(t.tokens > 0)) continue;
+      const s = t.pair ? quoteOf(t.pair) : null;
+      s && recTick(e, parseFloat(s.priceUsd));
+    }
+    saveTicks();
+  }
+  (flushOutbox(), pollFeed(), broadcast());
+}
+function ensureLoop() {
+  (loopId && Date.now() - lastTick < 3600) ||
+    (clearInterval(loopId),
+    (loopId = setInterval(() => {
+      tick().catch(() => {});
+    }, 600)),
+    tick().catch(() => {}));
+}
+function why(e) {
+  if (!S) return "state?";
+  if (!e) return "addr?";
+  if (!watchedPairs().includes(e)) return "not-watched";
+  const t = assetAt(e);
+  if (!(px(t) > 0)) return t.toLowerCase() + "=0";
+  if (isEvm(e)) {
+    const t = quotes.get(e);
+    return quoteOf(e) ? "ok" : "px0 " + chainOf(e) + " dex" + (t ? 1 : 0) + " page" + (padreOf(e) ? 1 : 0);
+  }
+  const s = padreOf(e),
+    o = jupOf(mintFor(e)),
+    a = quotes.get(e),
+    n = padre.get(e);
+  return (o && o.usdPrice > 0 ? o.usdPrice : s && s.price > 0 ? s.price : a ? parseFloat(a.pair.priceUsd) : 0) > 0
+    ? "ok"
+    : "px0 jup" +
+        (o ? 1 : 0) +
+        " page" +
+        (s ? 1 : 0) +
+        (n ? "/age" + Math.round((Date.now() - n.ts) / 1e3) + "s" : "/none") +
+        " dex" +
+        (a ? 1 : 0);
+}
+function snapshot(e) {
+  const t = {};
+  if (S)
+    for (const e of watchedPairs()) {
+      const s = quoteOf(e);
+      s && (t[e] = s);
+    }
+  const s = { watched: S ? watchedPairs().length : 0, ports: ports.size, solSrc: solSrc };
+  return (
+    e && ((s.a = e.slice(0, 6)), (s.why = why(e)), (s.chain = chainOf(e))),
+    {
+      state: S,
+      quotes: t,
+      solUsd: solUsd,
+      px: { SOL: solUsd, ETH: PX.ETH, BNB: PX.BNB },
+      chain: e ? chainOf(e) : "solana",
+      unresolved: [...unresolved.keys()],
+      dbg: s,
+    }
+  );
+}
+function broadcast(e) {
+  for (const t of ports)
+    try {
+      t.postMessage(Object.assign({ type: "sync" }, snapshot(activePair.get(t)), e || {}));
+    } catch (e) {}
+}
+function notify(e, t, s) {
+  for (const o of ports)
+    try {
+      o.postMessage({ type: "event", text: e, tone: t, sfx: s });
+    } catch (e) {}
+}
+function supplyOf(e) {
+  const t = parseFloat(e.priceUsd),
+    s = e.fdv || e.marketCap;
+  return t > 0 && s > 0 ? s / t : 0;
+}
+function pxTxt(e) {
+  if (!(e > 0)) return "";
+  if (e >= 1) return "$" + e.toFixed(4);
+  if (e >= 0.001) return "$" + e.toFixed(6).replace(/0+$/, "");
+  const t = Math.floor(Math.log10(e));
+  return (
+    "$0.0" +
+    String(-t - 1)
+      .split("")
+      .map((e) => "₀₁₂₃₄₅₆₇₈₉"[+e])
+      .join("") +
+    Math.round(e * Math.pow(10, 3 - t))
+      .toString()
+      .slice(0, 4)
+  );
+}
+function addFill(e, t) {
+  ((S.fills[e] = S.fills[e] || []).push(t), S.fills[e].length > 300 && S.fills[e].shift(), recTick(e, t.midUsd || t.priceUsd, t.ts));
+}
+const API_DEF = "https://trade-blanks.com/api";
+function apiBase() {
+  return (S && S.settings.apiBase) || API_DEF;
+}
+function account() {
+  return (S && S.settings.account) || null;
+}
+function follows() {
+  return S && Array.isArray(S.settings.follow) ? S.settings.follow : [];
+}
+async function api(e, t) {
+  const s = Object.assign({ method: "GET" }, t || {}),
+    o = Object.assign({}, s.headers || {}),
+    a = account();
+  (a && a.secret && !1 !== s.auth && (o.Authorization = "Bearer " + a.secret),
+    void 0 !== s.body && ((o["Content-Type"] = "application/json"), (s.body = JSON.stringify(s.body))));
+  const n = new AbortController(),
+    r = setTimeout(() => n.abort(), s.timeout || 6e3);
+  try {
+    const t = await fetch(apiBase() + e, { method: s.method, headers: o, body: s.body, cache: "no-store", signal: n.signal });
+    let a = null;
+    try {
+      a = await t.json();
+    } catch (e) {}
+    if (!t.ok) throw new Error((a && a.err) || "HTTP " + t.status);
+    return a;
+  } finally {
+    clearTimeout(r);
+  }
+}
+let gcfg = null,
+  gcfgTs = 0;
+async function googleClientId() {
+  if (null !== gcfg && Date.now() - gcfgTs < 6e5) return gcfg;
+  try {
+    const e = await api("/config", { auth: !1 });
+    gcfg = (e && e.googleClientId) || "";
+  } catch (e) {
+    gcfg = "";
+  }
+  return ((gcfgTs = Date.now()), gcfg);
+}
+async function googleIdToken(e) {
+  const t = await googleClientId();
+  if (!t) throw new Error("Google link is not set up on the server yet");
+  if (!chrome.identity || !chrome.identity.launchWebAuthFlow) throw new Error("this browser cannot open a Google sign-in");
+  const s = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+      .map((e) => e.toString(16).padStart(2, "0"))
+      .join(""),
+    o =
+      "https://accounts.google.com/o/oauth2/v2/auth?" +
+      new URLSearchParams({
+        client_id: t,
+        response_type: "id_token",
+        redirect_uri: chrome.identity.getRedirectURL(),
+        scope: "openid profile",
+        nonce: s,
+        prompt: e ? "select_account" : "none",
+      }).toString(),
+    a = await new Promise((t, s) => {
+      try {
+        chrome.identity.launchWebAuthFlow({ url: o, interactive: !!e }, (e) => {
+          const o = chrome.runtime.lastError;
+          o || !e
+            ? s(new Error(o ? o.message + " (redirect " + chrome.identity.getRedirectURL() + ")" : "sign-in cancelled"))
+            : t(e);
+        });
+      } catch (e) {
+        s(e);
+      }
+    }),
+    n = String(a).split("#")[1] || "",
+    r = new URLSearchParams(n).get("id_token");
+  if (!r) throw new Error("no token came back from Google");
+  return r;
+}
+function renameFollowed(e, t) {
+  const s = e.toLowerCase(),
+    o = new Set();
+  S.settings.follow = follows()
+    .map((e) => (e.toLowerCase() === s ? t : e))
+    .filter((e) => {
+      const t = e.toLowerCase();
+      return !o.has(t) && (o.add(t), !0);
+    });
+  for (const e of S.track.feed) String(e.user).toLowerCase() === s && (e.user = t);
+  for (const e in S.track.byMint) for (const o of S.track.byMint[e]) String(o.user).toLowerCase() === s && (o.user = t);
+  S.track.profiles && delete S.track.profiles[s];
+}
+function publish(e, t, s, o, a) {
+  if (self.BX && BX.mute) return;
+  const n = account();
+  if (!n || !n.secret || !n.share) return;
+  const r = t.asset || "SOL",
+    i = "SOL" === r ? 1 : solUsd > 0 && px(r) > 0 ? px(r) / solUsd : 0;
+  i &&
+    (S.track.outbox.push({
+      mint: e,
+      pair: s || null,
+      symbol: o || "",
+      side: t.side,
+      sol: t.sol * i,
+      amt: t.sol,
+      asset: r,
+      chain: t.chain || "solana",
+      tokens: t.tokens,
+      priceUsd: t.midUsd || t.priceUsd,
+      mcap: t.supply > 0 && (t.midUsd || t.priceUsd) > 0 ? t.supply * (t.midUsd || t.priceUsd) : null,
+      pnlSol: "number" == typeof a ? a * i : null,
+      pnlAmt: "number" == typeof a ? a : null,
+      ts: t.ts,
+    }),
+    S.track.outbox.length > 200 && S.track.outbox.splice(0, S.track.outbox.length - 200),
+    flushOutbox());
+}
+let flushing = !1;
+async function flushOutbox() {
+  if (!flushing && S && S.track.outbox.length && account() && account().secret && !account().stale) {
+    flushing = !0;
+    try {
+      const e = S.track.outbox.slice(0, 50);
+      (await api("/fills", { method: "POST", body: { fills: e } }), S.track.outbox.splice(0, e.length), save());
+    } catch (e) {
+      /bad secret/.test(e.message) && account() && !account().stale && ((account().stale = !0), save(), broadcast());
+    } finally {
+      flushing = !1;
+    }
+  }
+}
+let feedTs = 0,
+  feedBusy = !1;
+const mintTs = new Map();
+function feedSince() {
+  return S.track.feed.length
+    ? Math.max.apply(
+        null,
+        S.track.feed.map((e) => e.ts),
+      )
+    : 0;
+}
+function ingestFeed(e) {
+  if (!Array.isArray(e) || !e.length) return 0;
+  const t = new Set(S.track.feed.map((e) => e.user + "|" + e.ts + "|" + e.mint + "|" + e.side)),
+    s = e.filter((e) => e && !t.has(e.user + "|" + e.ts + "|" + e.mint + "|" + e.side));
+  if (!s.length) return 0;
+  S.track.feed = s
+    .concat(S.track.feed)
+    .sort((e, t) => t.ts - e.ts)
+    .slice(0, 300);
+  for (const e of s) mergeMint(e);
+  for (const e of s)
+    Date.now() - e.ts < 15e3 &&
+      notify(
+        e.user + " " + ("buy" === e.side ? "bought" : "sold") + " " + (e.symbol || "?") + " · " + (+e.sol).toFixed(3) + " SOL",
+        "buy" === e.side ? "good" : "bad",
+      );
+  return (save(), broadcast(), s.length);
+}
+async function pollFeed(e) {
+  const t = follows();
+  if ((pollProfiles(e), t.length)) {
+    if ((feedWait(), !(feedBusy || (!e && Date.now() - feedTs < 5e3)))) {
+      ((feedBusy = !0), (feedTs = Date.now()));
+      try {
+        ingestFeed(await api("/feed?users=" + encodeURIComponent(t.join(",")) + "&since=" + feedSince() + "&limit=100"));
+        const e = new Set(t.map((e) => e.toLowerCase())),
+          s = S.track.feed.length;
+        ((S.track.feed = S.track.feed.filter((t) => e.has(String(t.user).toLowerCase()))), S.track.feed.length !== s && save());
+      } catch (e) {
+      } finally {
+        feedBusy = !1;
+      }
+    }
+  } else S.track.feed.length && ((S.track.feed = []), (S.track.byMint = {}));
+}
+let waiting = !1,
+  waitGen = 0;
+async function feedWait() {
+  if (waiting) return;
+  waiting = !0;
+  const e = ++waitGen;
+  try {
+    for (; e === waitGen && ports.size && follows().length;) {
+      const t = follows();
+      let s = null;
+      try {
+        s = await api("/feed?users=" + encodeURIComponent(t.join(",")) + "&since=" + feedSince() + "&limit=100&wait=1", { timeout: 32e3 });
+      } catch (e) {
+        await new Promise((e) => setTimeout(e, 2e3));
+        continue;
+      }
+      if (e !== waitGen) break;
+      ingestFeed(s);
+    }
+  } finally {
+    e === waitGen && (waiting = !1);
+  }
+}
+function feedRestart() {
+  (waitGen++, (waiting = !1), (feedTs = 0));
+}
+let profTs = 0,
+  profBusy = !1;
+async function pollProfiles(e) {
+  if (!(!S || profBusy || (!e && Date.now() - profTs < 3e5))) {
+    ((profBusy = !0), (profTs = Date.now()));
+    try {
+      const e = follows(),
+        t = (S.track.profiles = S.track.profiles || {});
+      let s = !1;
+      if (e.length) {
+        const o = await api("/profiles?users=" + encodeURIComponent(e.join(",")), { auth: !1 });
+        if (Array.isArray(o))
+          for (const e of o) {
+            if (!e || !e.pseudo) continue;
+            e.alias && String(e.alias).toLowerCase() !== String(e.pseudo).toLowerCase()
+              ? (renameFollowed(String(e.alias), e.pseudo), (s = !0))
+              : follows().some((t) => t !== e.pseudo && t.toLowerCase() === String(e.pseudo).toLowerCase()) &&
+                (renameFollowed(e.pseudo, e.pseudo), (s = !0));
+            const o = String(e.pseudo).toLowerCase(),
+              a = "string" == typeof e.avatar && e.avatar.startsWith("data:image/") ? e.avatar : null,
+              n = "number" == typeof e.rank && e.rank > 0 ? e.rank : null;
+            (t[o] && t[o].avatar === a && t[o].pseudo === e.pseudo && t[o].rank === n) ||
+              ((t[o] = { pseudo: e.pseudo, avatar: a, fills: e.fills || 0, rank: n }), (s = !0));
+          }
+      }
+      const o = new Set(e.map((e) => e.toLowerCase()));
+      for (const e in t) o.has(e) || (delete t[e], (s = !0));
+      const a = account();
+      if (a && a.secret)
+        try {
+          const e = await api("/me");
+          if (e) {
+            ((void 0 !== a.avatar && void 0 !== a.google) ||
+              ((a.avatar = "string" == typeof e.avatar ? e.avatar : null), (a.google = !!e.google)),
+              e.pseudo && (a.pseudo = e.pseudo),
+              "lb" in e && (a.lb = !!e.lb));
+            const t = "number" == typeof e.rank && e.rank > 0 ? e.rank : null;
+            ((a.rank === t && a.ranked === (e.ranked || 0)) || ((a.rank = t), (a.ranked = e.ranked || 0)), (s = !0));
+          }
+        } catch (e) {
+          /bad secret/.test(e.message) && ((a.stale = !0), (s = !0));
+        }
+      s && (save(), broadcast());
+    } catch (e) {
+    } finally {
+      profBusy = !1;
+    }
+  }
+}
+function mergeMint(e) {
+  const t = (S.track.byMint[e.mint] = S.track.byMint[e.mint] || []);
+  if (t.some((t) => t.user === e.user && t.ts === e.ts && t.side === e.side)) return;
+  (t.push(e), t.sort((e, t) => e.ts - t.ts), t.length > 200 && t.splice(0, t.length - 200));
+  const s = Object.keys(S.track.byMint);
+  s.length > 40 && delete S.track.byMint[s[0]];
+}
+async function loadMint(e) {
+  const t = follows();
+  if (e && t.length && !(Date.now() - (mintTs.get(e) || 0) < 6e4)) {
+    mintTs.set(e, Date.now());
+    try {
+      const s = await api("/mint?mint=" + encodeURIComponent(e) + "&users=" + encodeURIComponent(t.join(",")));
+      if (Array.isArray(s)) {
+        for (const e of s) mergeMint(e);
+        s.length && (save(), broadcast());
+      }
+    } catch (e) {}
+  }
+}
+const TICKS_KEY = "papr.ticks";
+let ticks = null,
+  ticksDirty = !1,
+  ticksSaveT = 0;
+function loadTicks() {
+  return ticks
+    ? Promise.resolve(ticks)
+    : new Promise((e) => {
+        try {
+          chrome.storage.local.get(TICKS_KEY, (t) => {
+            ((ticks = (t && t[TICKS_KEY]) || {}), e(ticks));
+          });
+        } catch (t) {
+          ((ticks = {}), e(ticks));
+        }
+      });
+}
+function recTick(e, t, s) {
+  if (!(ticks && e && t > 0)) return;
+  const o = (ticks[e] = ticks[e] || []),
+    a = s || Date.now(),
+    n = o[o.length - 1];
+  if (!(n && a - n[0] < 400)) {
+    if ((o.push([a, t]), o.length > 1500)) {
+      for (let e = 0, t = 0; e < o.length; e += 2) o[t++] = o[e];
+      o.length = Math.ceil(o.length / 2);
+    }
+    ticksDirty = !0;
+  }
+}
+function saveTicks() {
+  if (!ticksDirty || !ticks || Date.now() - ticksSaveT < 15e3) return;
+  ((ticksSaveT = Date.now()), (ticksDirty = !1));
+  const e = new Set(Object.keys(S.positions));
+  for (const t of (S.trades || []).slice(0, 30)) e.add(t.mint);
+  for (const t of Object.keys(ticks)) e.has(t) || delete ticks[t];
+  try {
+    chrome.storage.local.set({ [TICKS_KEY]: ticks });
+  } catch (e) {}
+}
+function bal(e) {
+  return "SOL" === e ? S.balanceSol || 0 : (S.balances && S.balances[e]) || 0;
+}
+function addBal(e, t) {
+  "SOL" === e ? (S.balanceSol += t) : ((S.balances = S.balances || {}), (S.balances[e] = (S.balances[e] || 0) + t));
+}
+function execBuy(e, t, s) {
+  const o = quoteOf(e),
+    a = mktOf(e);
+  if (!o || !a) return { err: "no price" };
+  const n = chainOf(e),
+    r = E.assetOf(n),
+    i = px(r),
+    c = E.simulateBuy(a, t, E.cfgFor(S.settings, "buy", r), "random");
+  if (!c) return { err: "invalid amount" };
+  if (c.solTotal > bal(r)) return { err: "insufficient balance" };
+  const l = o.baseToken.address;
+  let d = S.positions[l];
+  (d ||
+    (d = S.positions[l] =
+      {
+        mint: l,
+        pair: e,
+        symbol: o.baseToken.symbol,
+        chain: n,
+        asset: r,
+        tokens: 0,
+        peakTokens: 0,
+        costSol: 0,
+        investedSol: 0,
+        returnedSol: 0,
+        feesSol: 0,
+        buys: 0,
+        sells: 0,
+        openedAt: Date.now(),
+      }),
+    (d.chain = n),
+    (d.asset = r),
+    (d.tokens += c.tokens),
+    (d.peakTokens = Math.max(d.peakTokens || 0, d.tokens)),
+    (d.costSol += c.solTotal),
+    (d.investedSol += c.solTotal),
+    (d.feesSol += c.feesTotalSol),
+    d.buys++,
+    (d.pair = e),
+    addBal(r, -c.solTotal),
+    self.BX && BX.afterBuy(d, o, c, s));
+  const u = {
+    ts: Date.now(),
+    side: "buy",
+    priceUsd: c.execPrice * i,
+    midUsd: c.midPrice * i,
+    sol: c.solTotal,
+    tokens: c.tokens,
+    supply: supplyOf(o),
+    tag: s || null,
+    asset: r,
+    chain: n,
+  };
+  return (
+    (u.mcap = u.supply > 0 ? u.midUsd * u.supply : null),
+    addFill(l, u),
+    publish(l, u, e, d.symbol, null),
+    save(),
+    { ok: !0, r: c, symbol: d.symbol }
+  );
+}
+function execSell(e, t, s) {
+  const o = quoteOf(e),
+    a = mktOf(e);
+  if (!o || !a) return { err: "no price" };
+  const n = o.baseToken.address,
+    r = S.positions[n];
+  if (!(r && r.tokens > 0)) return { err: "no position" };
+  const i = r.chain || chainOf(e),
+    c = r.asset || E.assetOf(i),
+    l = px(c),
+    d = Math.min(1, Math.max(0, t)),
+    u = r.tokens * d,
+    p = E.simulateSell(a, u, E.cfgFor(S.settings, "sell", c), "random");
+  if (!(p && p.solNet > 0)) return { err: "exit blocked (liquidity)" };
+  const f = r.costSol * d;
+  ((r.tokens -= u), (r.costSol -= f), (r.returnedSol += p.solNet), (r.feesSol += p.feesTotalSol), r.sells++, addBal(c, p.solNet));
+  const m = {
+    ts: Date.now(),
+    side: "sell",
+    priceUsd: p.execPrice * l,
+    midUsd: p.midPrice * l,
+    sol: p.solNet,
+    tokens: u,
+    supply: supplyOf(o),
+    tag: s || null,
+    asset: c,
+    chain: i,
+  };
+  ((m.mcap = m.supply > 0 ? m.midUsd * m.supply : null), addFill(n, m));
+  const y = p.solNet - f;
+  publish(n, m, e, r.symbol, y);
+  let g = !1;
+  return (
+    (d >= 1 || r.tokens <= 1e-9) &&
+      (S.trades.unshift({
+        mint: n,
+        symbol: r.symbol,
+        pair: r.pair,
+        chain: i,
+        asset: c,
+        openedAt: r.openedAt,
+        closedAt: Date.now(),
+        investedSol: r.investedSol,
+        returnedSol: r.returnedSol,
+        pnlSol: r.returnedSol - r.investedSol,
+        pnlPct: r.investedSol > 0 ? 100 * (r.returnedSol / r.investedSol - 1) : 0,
+        feesSol: r.feesSol,
+        buys: r.buys,
+        sells: r.sells,
+      }),
+      self.BX && BX.onClose(S.trades[0], r),
+      addTokenStat(S.tokenStats || (S.tokenStats = {}), S.trades[0]),
+      S.trades.length > 2e3 && (S.trades.length = 2e3),
+      delete S.positions[n],
+      (S.orders = S.orders.filter((e) => !(e.mint === n && ("tp" === e.kind || "sl" === e.kind)))),
+      (g = !0)),
+    save(),
+    { ok: !0, r: p, realized: y, closed: g, symbol: r.symbol }
+  );
+}
+function triggerPrice(e, t) {
+  if ("price" === e.mode) return e.value;
+  if ("mc" === e.mode) {
+    const s = t ? parseFloat(t.priceUsd) : 0,
+      o = t ? t.marketCap || t.fdv : 0,
+      a = s > 0 && o > 0 ? o / s : e.supply > 0 ? e.supply : 0;
+    return (a > 0 && !(e.supply > 0) && (e.supply = a), a > 0 ? e.value / a : null);
+  }
+  const s = S.positions[e.mint],
+    o = px(s && s.asset ? s.asset : assetAt(e.pair));
+  if (!(s && s.tokens > 0 && o)) return null;
+  const a = (s.costSol / s.tokens) * o;
+  return "tp" === e.kind ? a * (1 + e.value / 100) : "sl" === e.kind ? a * (1 - e.value / 100) : null;
+}
+function placeExits(e, t) {
+  if (!Array.isArray(t) || !t.length) return 0;
+  const s = quoteOf(e);
+  if (!s) return 0;
+  const o = s.baseToken.address;
+  if (!(S.positions[o] && S.positions[o].tokens > 0)) return 0;
+  S.orders = S.orders.filter((e) => !(e.auto && e.mint === o));
+  const a = chainOf(e),
+    n = E.assetOf(a);
+  let r = 0;
+  for (const i of t.slice(0, 6)) {
+    const t = i && "sl" === i.k ? "sl" : "tp",
+      c = +i.v,
+      l = Math.min(100, Math.max(1, +i.s || 100));
+    c > 0 &&
+      !("sl" === t && c >= 100) &&
+      (S.orders.push({
+        id: self.crypto && crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+        createdAt: Date.now(),
+        kind: t,
+        mode: "pct",
+        value: c,
+        sizePct: l,
+        supply: 0,
+        mint: o,
+        pair: e,
+        symbol: s.baseToken.symbol,
+        chain: a,
+        asset: n,
+        auto: !0,
+      }),
+      r++);
+  }
+  return r;
+}
+function checkOrders() {
+  if (S && S.orders.length)
+    for (const e of S.orders) {
+      if (e.firing) continue;
+      const t = quoteOf(e.pair);
+      if (!t) continue;
+      const s = parseFloat(t.priceUsd),
+        o = triggerPrice(e, t);
+      if (!(s > 0 && o > 0)) continue;
+      ("tp" === e.kind && s >= o) || ("sl" === e.kind && s <= o) || ("limit" === e.kind && s <= o)
+        ? (("tp" !== e.kind && "sl" !== e.kind) || S.positions[e.mint]) &&
+          ((e.hits = (e.hits || 0) + 1), e.hits < 2 || ((e.firing = !0), fireOrder(e)))
+        : (e.hits = 0);
+    }
+}
+async function fireOrder(e) {
+  const t = "tp" === e.kind ? "TP" : "sl" === e.kind ? "SL" : "Limit",
+    s = Math.max(0, S.settings.execDelayMs || 0);
+  let o;
+  (s && (await new Promise((e) => setTimeout(e, s))),
+    quoteOf(e.pair) || (await priceReady(e.pair)),
+    "limit" === e.kind
+      ? ((o = (self.BX && BX.blockBuy({ pair: e.pair, amountSol: e.amountSol }) && { err: BX.blockBuy({ pair: e.pair, amountSol: e.amountSol }) }) || execBuy(e.pair, e.amountSol, t)),
+        !o.err && e.exits && placeExits(e.pair, e.exits))
+      : (o = execSell(e.pair, (e.sizePct || 100) / 100, t)),
+    (S.orders = S.orders.filter((t) => t.id !== e.id)));
+  const a = (o.r && o.r.asset) || e.asset || assetAt(e.pair);
+  (o.err
+    ? notify(t + " " + (e.symbol || "") + " failed: " + o.err, "bad")
+    : "limit" === e.kind
+      ? notify(t + " filled · " + e.symbol + " · " + e.amountSol + " " + a, "good", "buy")
+      : notify(
+          t + " triggered · " + e.symbol + " · " + (o.realized >= 0 ? "+" : "") + o.realized.toFixed(4) + " " + a,
+          o.realized >= 0 ? "good" : "bad",
+          "sell",
+        ),
+    save(),
+    broadcast());
+}
+async function handle(e, t) {
+  await loadState();
+  const s = S.settings;
+  if (self.BX && BX.cmds[e.cmd]) {
+    try {
+      await BX.cmds[e.cmd](e, t);
+    } catch (e) {
+      notify(e.message, "bad");
+    }
+    return (save(), void broadcast());
+  }
+  switch (e.cmd) {
+    case "hello":
+      if (
+        (e.pair &&
+          e.chain &&
+          (chains.set(e.pair, e.chain), e.kind && kinds.set(e.pair, e.kind), "solana" !== e.chain && warmPx(E.assetOf(e.chain), !0)),
+        activePair.set(t, e.pair || null),
+        ensureLoop(),
+        t.postMessage(Object.assign({ type: "sync" }, snapshot(e.pair || null))),
+        restoredFromSync)
+      ) {
+        const e = restoredFromSync;
+        ((restoredFromSync = null),
+          setTimeout(() => {
+            try {
+              t.postMessage({
+                type: "event",
+                text: "wallet restored from your Google account · " + e.trades + " trade" + (e.trades > 1 ? "s" : ""),
+                tone: "good",
+              });
+            } catch (e) {}
+          }, 600));
+      }
+      if (lastQb && Date.now() - lastQb.ts < 8e3) {
+        const e = lastQb;
+        ((lastQb = null),
+          setTimeout(() => {
+            try {
+              t.postMessage({ type: "event", text: e.text, tone: e.tone, sfx: e.sfx });
+            } catch (e) {}
+          }, 400));
+      }
+      return;
+    case "pair":
+      return (
+        e.pair && e.chain && (chains.set(e.pair, e.chain), e.kind && kinds.set(e.pair, e.kind)),
+        activePair.set(t, e.pair || null),
+        e.pair && e.chain && "solana" !== e.chain && warmPx(E.assetOf(e.chain)),
+        ensureLoop(),
+        tick().catch(() => {}),
+        void (e.mint && loadMint(e.mint))
+      );
+    case "pairinfo":
+      return void (
+        e.pair &&
+        e.chain &&
+        (chains.set(e.pair, e.chain), e.kind && kinds.set(e.pair, e.kind), "solana" !== e.chain && warmPx(E.assetOf(e.chain)))
+      );
+    case "mint":
+      return void loadMint(e.mint);
+    case "register": {
+      const t = String(e.pseudo || "").trim();
+      try {
+        const e = await api("/register", { method: "POST", body: { pseudo: t }, auth: !1 });
+        ((S.settings.account = {
+          id: e.id,
+          pseudo: e.pseudo,
+          secret: e.secret,
+          share: !0,
+          lb: !0,
+          since: Date.now(),
+          avatar: null,
+          google: !1,
+          rank: null,
+          ranked: 0,
+        }),
+          notify("welcome, " + e.pseudo + " — your trades are now shared", "good"));
+      } catch (e) {
+        notify("register failed: " + e.message, "bad");
+      }
+      break;
+    }
+    case "share": {
+      const t = account();
+      if (!t) break;
+      if (((t.share = !!e.value), !t.share && e.wipe))
+        try {
+          (await api("/fills", { method: "DELETE" }), (S.track.outbox = []), notify("your published trades were deleted", "good"));
+        } catch (e) {
+          notify("could not delete: " + e.message, "bad");
+        }
+      else notify(t.share ? "sharing on" : "sharing off");
+      break;
+    }
+    case "lb": {
+      const t = account();
+      if (!t) break;
+      const s = !!e.value;
+      try {
+        const e = await api("/lb", { method: "POST", body: { on: s } });
+        ((t.lb = !(!e || !e.lb)),
+          t.lb || (t.rank = null),
+          pollProfiles(!0),
+          notify(t.lb ? "you appear on the leaderboard" : "hidden from the leaderboard", t.lb ? "good" : ""));
+      } catch (e) {
+        notify("leaderboard: " + e.message, "bad");
+      }
+      break;
+    }
+    case "avatar": {
+      const t = account();
+      if (!t || !t.secret) {
+        notify("register a pseudo first", "bad");
+        break;
+      }
+      const s =
+        "string" == typeof e.avatar && /^data:image\/(jpeg|png|webp);base64,/.test(e.avatar) && e.avatar.length <= 12e3 ? e.avatar : null;
+      try {
+        const e = await api("/avatar", { method: "POST", body: { avatar: s } });
+        ((t.avatar = e && "string" == typeof e.avatar ? e.avatar : null), notify(t.avatar ? "photo updated" : "photo removed", "good"));
+      } catch (e) {
+        notify("photo: " + e.message, "bad");
+      }
+      break;
+    }
+    case "glink": {
+      const e = account();
+      if (!e || !e.secret) {
+        notify("register a pseudo first", "bad");
+        break;
+      }
+      try {
+        const t = await googleIdToken(!0),
+          s = await api("/link", { method: "POST", body: { id_token: t } });
+        ((e.google = !0),
+          s && "string" == typeof s.avatar && (e.avatar = s.avatar),
+          notify("linked to your Google account — your pseudo can always be recovered", "good"));
+      } catch (e) {
+        notify("Google link: " + e.message, "bad");
+      }
+      break;
+    }
+    case "grecover":
+      try {
+        const e = await googleIdToken(!0),
+          t = await api("/recover", { method: "POST", body: { id_token: e }, auth: !1 });
+        ((S.settings.account = {
+          id: t.id,
+          pseudo: t.pseudo,
+          secret: t.secret,
+          share: !0,
+          since: Date.now(),
+          avatar: t.avatar || null,
+          google: !0,
+        }),
+          (S.track.outbox = []),
+          notify("welcome back, " + t.pseudo, "good"));
+      } catch (e) {
+        notify("Google recover: " + e.message, "bad");
+      }
+      break;
+    case "gphoto": {
+      const e = account();
+      if (!e || !e.secret) {
+        notify("register a pseudo first", "bad");
+        break;
+      }
+      try {
+        const t = await googleIdToken(!0),
+          s = await api("/avatar", { method: "POST", body: { id_token: t } });
+        ((e.avatar = s && "string" == typeof s.avatar ? s.avatar : e.avatar), notify("Google photo set", "good"));
+      } catch (e) {
+        notify("Google photo: " + e.message, "bad");
+      }
+      break;
+    }
+    case "rename": {
+      const t = account();
+      if (!t || !t.secret) {
+        notify("register a pseudo first", "bad");
+        break;
+      }
+      const s = String(e.pseudo || "").trim();
+      if (!/^[A-Za-z0-9_]{3,20}$/.test(s)) {
+        notify("3 to 20 letters, digits or _", "bad");
+        break;
+      }
+      try {
+        const e = await api("/rename", { method: "POST", body: { pseudo: s } });
+        ((t.pseudo = e.pseudo), notify("you are now " + e.pseudo + " — people who follow you keep following you", "good"));
+      } catch (e) {
+        notify("rename: " + e.message, "bad");
+      }
+      break;
+    }
+    case "forget":
+      ((S.settings.account = null), (S.track.outbox = []), notify("pseudo removed from this browser"));
+      break;
+    case "unregister":
+      try {
+        await api("/me", { method: "DELETE" });
+      } catch (e) {}
+      ((S.settings.account = null), (S.track.outbox = []), notify("account removed"));
+      break;
+    case "follow": {
+      const t = String(e.pseudo || "").trim(),
+        s = follows().slice(),
+        o = account();
+      if (!/^[A-Za-z0-9_]{3,20}$/.test(t)) {
+        notify("3 to 20 letters, digits or _", "bad");
+        break;
+      }
+      if (o && o.pseudo.toLowerCase() === t.toLowerCase()) {
+        notify("that's you", "bad");
+        break;
+      }
+      if (s.some((e) => e.toLowerCase() === t.toLowerCase())) {
+        notify("already following " + t);
+        break;
+      }
+      try {
+        const e = await api("/users?q=" + encodeURIComponent(t), { auth: !1 }),
+          o = Array.isArray(e) && e.find((e) => e.pseudo.toLowerCase() === t.toLowerCase());
+        if (!o) {
+          notify("no trader named " + t, "bad");
+          break;
+        }
+        (s.push(o.pseudo),
+          (S.settings.follow = s.slice(0, 50)),
+          notify("following " + o.pseudo, "good"),
+          feedRestart(),
+          (profTs = 0),
+          mintTs.clear(),
+          pollFeed(!0));
+        for (const e of activePair.values()) e && loadMint(mintFor(e));
+      } catch (e) {
+        notify("lookup failed: " + e.message, "bad");
+      }
+      break;
+    }
+    case "followMany": {
+      const t = [
+          ...new Set(
+            (Array.isArray(e.pseudos) ? e.pseudos : []).map((e) => String(e || "").trim()).filter((e) => /^[A-Za-z0-9_]{3,20}$/.test(e)),
+          ),
+        ],
+        s = follows().slice(),
+        o = account();
+      let a = 0,
+        n = 0;
+      for (const e of t) {
+        if (s.length >= 50) break;
+        if ((!o || o.pseudo.toLowerCase() !== e.toLowerCase()) && !s.some((t) => t.toLowerCase() === e.toLowerCase()))
+          try {
+            const t = await api("/users?q=" + encodeURIComponent(e), { auth: !1 }),
+              o = Array.isArray(t) && t.find((t) => t.pseudo.toLowerCase() === e.toLowerCase());
+            o ? (s.push(o.pseudo), a++) : n++;
+          } catch (e) {
+            n++;
+          }
+      }
+      if (
+        ((S.settings.follow = s),
+        notify(
+          a
+            ? "imported " + a + " trader" + (a > 1 ? "s" : "") + (n ? " · " + n + " unknown" : "")
+            : n
+              ? "no known trader in that file"
+              : "nothing new to import",
+          a ? "good" : "bad",
+        ),
+        a)
+      ) {
+        (feedRestart(), (profTs = 0), mintTs.clear(), pollFeed(!0));
+        for (const e of activePair.values()) e && loadMint(mintFor(e));
+      }
+      break;
+    }
+    case "unfollow": {
+      const t = String(e.pseudo || "");
+      ((S.settings.follow = follows().filter((e) => e.toLowerCase() !== t.toLowerCase())),
+        (S.track.feed = S.track.feed.filter((e) => String(e.user).toLowerCase() !== t.toLowerCase())));
+      for (const e in S.track.byMint) S.track.byMint[e] = S.track.byMint[e].filter((e) => String(e.user).toLowerCase() !== t.toLowerCase());
+      (S.track.profiles && delete S.track.profiles[t.toLowerCase()], feedRestart(), notify("unfollowed " + t));
+      break;
+    }
+    case "changelog": {
+      let e = [];
+      try {
+        const t = await fetch(chrome.runtime.getURL("changelog.json"));
+        e = await t.json();
+      } catch (e) {}
+      return void t.postMessage({ type: "changelog", log: Array.isArray(e) ? e : [] });
+    }
+    case "subscribe": {
+      const t = String(e.email || "").trim();
+      if (!/^[^@\s]{1,64}@[^@\s]{1,255}\.[A-Za-z]{2,24}$/.test(t)) {
+        notify("that does not look like an email address", "bad");
+        break;
+      }
+      try {
+        const e = await api("/subscribe", { method: "POST", body: { email: t, src: "ext" }, auth: !1 });
+        ((S.settings.news = { email: t, sid: e.sid, confirmed: !!e.confirmed, ts: Date.now() }),
+          notify(e.confirmed ? "already subscribed" : "check your inbox — one click to confirm", "good"));
+      } catch (e) {
+        notify("newsletter: " + e.message, "bad");
+      }
+      break;
+    }
+    case "unsubscribe": {
+      const e = S.settings.news;
+      if (e && e.sid)
+        try {
+          await api("/newsletter?sid=" + encodeURIComponent(e.sid), { method: "DELETE", auth: !1 });
+        } catch (e) {}
+      ((S.settings.news = null), notify("unsubscribed"));
+      break;
+    }
+    case "newsStatus": {
+      const e = S.settings.news;
+      if (!e || !e.sid || e.confirmed) return;
+      try {
+        const t = await api("/newsletter?sid=" + encodeURIComponent(e.sid), { auth: !1 });
+        t && t.confirmed && ((e.confirmed = !0), save(), broadcast());
+      } catch (e) {
+        /not subscribed/.test(e.message) && ((S.settings.news = null), save(), broadcast());
+      }
+      return;
+    }
+    case "search":
+      try {
+        const s = await api("/users?q=" + encodeURIComponent(String(e.q || "")), { auth: !1 });
+        t.postMessage({ type: "search", q: e.q, users: Array.isArray(s) ? s : [] });
+      } catch (s) {
+        t.postMessage({ type: "search", q: e.q, users: [], err: s.message });
+      }
+      return;
+    case "ustats": {
+      const s = String(e.pseudo || "");
+      try {
+        const e = await api("/stats?user=" + encodeURIComponent(s) + "&limit=150", { auth: !1 });
+        t.postMessage({ type: "ustats", pseudo: s, stats: e });
+      } catch (e) {
+        t.postMessage({ type: "ustats", pseudo: s, err: e.message });
+      }
+      return;
+    }
+    case "top": {
+      const s = ["1d", "7d", "30d", "all"].includes(e.period) ? e.period : "7d";
+      try {
+        const e = await api("/leaderboard?period=" + s + "&limit=25", { auth: !1 });
+        t.postMessage({ type: "top", period: s, top: e });
+      } catch (e) {
+        t.postMessage({ type: "top", period: s, err: e.message });
+      }
+      return;
+    }
+    case "ticks":
+      return (await loadTicks(), void t.postMessage({ type: "ticks", mint: e.mint, ticks: (ticks && ticks[e.mint]) || [] }));
+    case "ping":
+      return void ensureLoop();
+    case "live":
+      if (e.pair && e.px > 0 && (live.set(e.pair, { px: e.px, ts: Date.now() }), live.size > 40))
+        for (const [e, t] of live) Date.now() - t.ts > 6e4 && live.delete(e);
+      return;
+    case "padre":
+      if (e.pair && e.data && (padre.set(e.pair, Object.assign({ ts: Date.now() }, e.data)), unresolved.delete(e.pair), padre.size > 40))
+        for (const [e, t] of padre) Date.now() - t.ts > 6e4 && padre.delete(e);
+      return;
+    case "buy": {
+      {
+        const why = self.BX && BX.blockBuy(e);
+        if (why) {
+          notify(why, "bad");
+          break;
+        }
+      }
+      const t = Math.max(0, s.execDelayMs || 0);
+      if (
+        (t && (notify("executing…", "wait"), await new Promise((e) => setTimeout(e, t))),
+        quoteOf(e.pair) || (await priceReady(e.pair)),
+        "trenches" === e.tag)
+      ) {
+        const t = quoteOf(e.pair);
+        (t && "padre" !== t._src) || (await timeBox(freshen(e.pair), 700));
+      }
+      const o = execBuy(e.pair, e.amountSol, e.tag || "manuel"),
+        a = (o.r && o.r.asset) || "SOL",
+        n = o.err
+          ? "no price" === o.err
+            ? "no price for this token yet"
+            : o.err
+          : "buy " +
+            o.r.solTotal.toFixed(4) +
+            " " +
+            a +
+            " @ " +
+            pxTxt(o.r.midPrice * px(a)) +
+            " · impact " +
+            o.r.impactPct.toFixed(2) +
+            "% · slip " +
+            o.r.slipPct.toFixed(2) +
+            "%",
+        r = o.err ? "bad" : "good";
+      ("trenches" === e.tag && (lastQb = { text: n, tone: r, sfx: o.err ? null : "buy", ts: Date.now() }),
+        notify(n, r, o.err ? void 0 : "buy"),
+        !o.err && e.exits && placeExits(e.pair, e.exits),
+        self.BX && BX.mirror && BX.mirror("buy", e));
+      break;
+    }
+    case "exits":
+      (placeExits(e.pair, e.exits) ? notify("exit orders placed", "good") : notify("no position to protect", "bad"),
+        self.BX && BX.mirror && BX.mirror("exits", e));
+      break;
+    case "sell": {
+      const t = Math.max(0, s.execDelayMs || 0);
+      (t && (notify("executing…", "wait"), await new Promise((e) => setTimeout(e, t))), quoteOf(e.pair) || (await priceReady(e.pair)));
+      const o = execSell(e.pair, e.fraction, "manuel");
+      if (o.err) notify(o.err, "bad");
+      else {
+        const e = o.r.asset || "SOL";
+        notify(
+          "sell " +
+            o.r.solNet.toFixed(4) +
+            " " +
+            e +
+            " @ " +
+            pxTxt(o.r.midPrice * px(e)) +
+            " · " +
+            (o.realized >= 0 ? "+" : "") +
+            o.realized.toFixed(4) +
+            " " +
+            e,
+          o.realized >= 0 ? "good" : "bad",
+          "sell",
+        );
+      }
+      self.BX && BX.mirror && BX.mirror("sell", e);
+      break;
+    }
+    case "order": {
+      const t = e.order;
+      if (!t || !t.pair) break;
+      ((t.id = self.crypto && crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random())),
+        (t.createdAt = Date.now()),
+        (t.chain = chainOf(t.pair)),
+        (t.asset = E.assetOf(t.chain)),
+        S.orders.push(t),
+        notify(("tp" === t.kind ? "TP" : "sl" === t.kind ? "SL" : "Limit") + " order placed", "good"));
+      break;
+    }
+    case "cancel":
+      ((S.orders = S.orders.filter((t) => t.id !== e.id)), notify("order cancelled"));
+      break;
+    case "settings":
+      Object.assign(S.settings, e.settings || {});
+      break;
+    case "balance": {
+      const t = e.asset && "SOL" !== e.asset ? e.asset : "SOL";
+      e.value >= 0 && ("SOL" === t ? (S.balanceSol = +e.value) : ((S.balances = S.balances || {}), (S.balances[t] = +e.value)));
+      break;
+    }
+    case "solusd":
+      e.value > 0 && (setSolUsd(+e.value), (solSrc = "manuel"));
+      break;
+    case "export":
+      return void t.postMessage({ type: "backup", state: S, at: Date.now() });
+    case "import": {
+      const t = e.state;
+      return t && "object" == typeof t
+        ? ((S = migrate(t)), save(), broadcast(), void notify("sauvegarde restauree", "good"))
+        : void notify("sauvegarde illisible", "bad");
+    }
+    case "ui":
+      Object.assign(S.ui, e.ui || {});
+      break;
+    case "reset": {
+      const t = Object.assign({}, S.settings),
+        s = e.keepBalance ? S.balanceSol : t.startBalanceSol || 10,
+        o = e.keepBalance ? Object.assign({}, S.balances) : null;
+      const keep = { wallets: S.wallets, walletId: S.walletId, walletSel: S.walletSel, alerts: S.alerts, alertLog: S.alertLog, badges: S.badges, replays: S.replays };
+      ((S = Object.assign(DEF_STATE(), keep)),
+        (S.settings = t),
+        (S.balanceSol = s),
+        (S.balances = o || { ETH: t.startBalanceEth || E.DEFAULTS.startBalanceEth, BNB: t.startBalanceBnb || E.DEFAULTS.startBalanceBnb }),
+        quotes.clear(),
+        notify("wallet reset"));
+      break;
+    }
+  }
+  (save(), broadcast());
+}
+(chrome.runtime.onConnect.addListener((e) => {
+  "papr" === e.name &&
+    (ports.add(e),
+    ensureLoop(),
+    e.onMessage.addListener((t) => {
+      handle(t, e).catch((e) => notify("error: " + e.message, "bad"));
+    }),
+    e.onDisconnect.addListener(() => {
+      (ports.delete(e), activePair.delete(e), ports.size || (clearInterval(loopId), (loopId = null)));
+    }));
+}),
+  chrome.runtime.onMessage.addListener((e, t, s) => {
+    if (e)
+      return "popup" === e.cmd
+        ? (loadState().then(() => {
+            let e = 0,
+              t = 0,
+              o = 0;
+            const a = [],
+              n = {},
+              r = (e) => (n[e] = n[e] || { balance: 0, openVal: 0, cost: 0, realized: 0, open: 0, trades: 0 });
+            for (const e of ["SOL", "ETH", "BNB"]) {
+              r(e).balance = "SOL" === e ? S.balanceSol : (S.balances && S.balances[e]) || 0;
+            }
+            for (const s in S.positions) {
+              const n = S.positions[s];
+              if (!(n.tokens > 0)) continue;
+              const i = n.asset || "SOL",
+                c = n.pair ? mktOf(n.pair) : null,
+                l = c ? E.exitValue(c, n.tokens, S.settings) : n.costSol,
+                d = r(i);
+              (d.open++,
+                (d.openVal += l),
+                (d.cost += n.costSol),
+                "SOL" === i &&
+                  (e++,
+                  (t += l),
+                  (o += n.costSol),
+                  a.push({
+                    mint: s,
+                    pair: n.pair,
+                    symbol: n.symbol || "?",
+                    tokens: n.tokens,
+                    costSol: n.costSol,
+                    valueSol: l,
+                    pnlSol: l - n.costSol,
+                    live: !!c,
+                  })));
+            }
+            a.sort((e, t) => t.valueSol - e.valueSol);
+            const i = S.trades || [];
+            for (const e of i) {
+              const t = r(e.asset || "SOL");
+              (t.trades++, (t.realized += e.pnlSol));
+            }
+            const c = i.filter((e) => "SOL" === (e.asset || "SOL")),
+              l = c.filter((e) => e.pnlSol > 0).length,
+              d = c.reduce((e, t) => e + t.pnlSol, 0),
+              u = t - o,
+              p = Date.now() - 864e5,
+              f = c.filter((e) => e.closedAt >= p).reduce((e, t) => e + t.pnlSol, 0) + u;
+            s({
+              enabled: !1 !== S.settings.enabled,
+              sites: Object.assign({ padre: !0, axiom: !0 }, S.settings.sites),
+              total: S.balanceSol + t,
+              balance: S.balanceSol,
+              openVal: t,
+              solUsd: solUsd > 0 ? solUsd : 0,
+              balances: Object.assign({ SOL: S.balanceSol }, S.balances),
+              px: { SOL: solUsd, ETH: PX.ETH, BNB: PX.BNB },
+              byAsset: n,
+              pnl: d + u,
+              pnl24: f,
+              realized: d,
+              unreal: u,
+              winRate: c.length ? (l / c.length) * 100 : 0,
+              trades: c.length,
+              open: e,
+              holdings: a.slice(0, 8),
+              recent: i
+                .slice(0, 8)
+                .map((e) => ({
+                  symbol: e.symbol || "?",
+                  investedSol: e.investedSol,
+                  returnedSol: e.returnedSol,
+                  pnlSol: e.pnlSol,
+                  pnlPct: e.pnlPct,
+                  closedAt: e.closedAt,
+                  mint: e.mint,
+                  pair: e.pair,
+                })),
+            });
+          }),
+          !0)
+        : "site" === e.cmd
+          ? (loadState().then(() => {
+              ((S.settings.sites = Object.assign({ padre: !0, axiom: !0 }, S.settings.sites, { [e.site]: !!e.value })),
+                save(),
+                broadcast(),
+                s({ ok: !0 }));
+            }),
+            !0)
+          : "enabled" === e.cmd
+            ? (loadState().then(() => {
+                ((S.settings.enabled = !!e.value), save(), broadcast(), s({ ok: !0 }));
+              }),
+              !0)
+            : void 0;
+  }),
+  chrome.runtime.onStartup.addListener(() => loadState()),
+  chrome.runtime.onInstalled.addListener((e) => {
+    loadState().then(() => {
+      if (e && "update" === e.reason && S) {
+        const t = chrome.runtime.getManifest().version;
+        e.previousVersion !== t && ((S.ui.upd = { from: e.previousVersion || "?", to: t, seen: !1 }), save());
+      }
+    });
+  }));
+/* les nouvelles fonctions : regles de risque, portefeuilles, alertes, note d'entree */
+try {
+  importScripts("bg-extras.js");
+} catch (e) {}
