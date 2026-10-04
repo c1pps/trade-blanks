@@ -1,0 +1,40 @@
+<!doctype html>
+<meta charset="utf-8">
+<link rel="stylesheet" href="popup.css">
+<div class="wrap">
+  <div class="hd">
+    <span class="icon"><svg viewBox="0 0 128 128" aria-hidden="true"><line x1="64" y1="22" x2="64" y2="106" stroke="#0b0b0b" stroke-width="12" stroke-linecap="round"/><rect x="38" y="42" width="52" height="46" rx="9" fill="#0b0b0b"/><rect x="51" y="55" width="26" height="20" rx="4" fill="#1fbf6f"/></svg></span>
+    <div class="name">Blanks<small>Paper wallet</small></div>
+    <div class="sites">
+      <span class="site" data-site="padre" title="Terminal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v3H4zM4 10h10v3H4zM4 15h16v3H4z" fill="currentColor"/></svg></span>
+      <span class="site" data-site="axiom" title="Axiom"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 18H3z" fill="currentColor"/></svg></span>
+    </div>
+    <a class="gear" id="settings" title="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></a>
+  </div>
+
+  <div class="bal">
+    <div class="usd" id="usd">—</div>
+    <div class="sol"><svg class="solico" viewBox="0 0 398 312" aria-hidden="true"><defs><linearGradient id="g1" x1="0" y1="312" x2="398" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#00FFA3"/><stop offset="1" stop-color="#DC1FFF"/></linearGradient></defs><g fill="url(#g1)"><path d="M64.6 237.9c2.4-2.4 5.7-3.8 9.2-3.8h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1l62.7-62.7z"/><path d="M64.6 3.8C67.1 1.4 70.4 0 73.8 0h317.4c5.8 0 8.7 7 4.6 11.1l-62.7 62.7c-2.4 2.4-5.7 3.8-9.2 3.8H6.5c-5.8 0-8.7-7-4.6-11.1L64.6 3.8z"/><path d="M333.1 120.1c-2.4-2.4-5.7-3.8-9.2-3.8H6.5c-5.8 0-8.7 7-4.6 11.1l62.7 62.7c2.4 2.4 5.7 3.8 9.2 3.8h317.4c5.8 0 8.7-7 4.6-11.1l-62.7-62.6z"/></g></svg><span id="sol">—</span></div>
+    <div class="chg" id="chg">—</div>
+    <div class="others" id="others"></div>
+  </div>
+
+  <div class="kpis">
+    <div class="kp"><div class="k">Available</div><div class="v" id="avail">—</div></div>
+    <div class="kp"><div class="k">In positions</div><div class="v" id="inpos">—</div></div>
+    <div class="kp"><div class="k">Win rate</div><div class="v" id="wr">—</div></div>
+  </div>
+
+  <div class="tabs"><span class="tab on" data-t="tokens">Tokens</span><span class="tab" data-t="activity">Activity</span></div>
+  <div class="list" id="tokens"></div>
+  <div class="list" id="activity" hidden></div>
+
+  <div class="btns">
+    <a class="btn" id="openPadre">Open Terminal</a>
+    <a class="btn" id="openAxiom">Open Axiom</a>
+  </div>
+  <a class="btn notif" id="notif" hidden>Enable desktop alerts</a>
+  <div class="foot"><span id="note"></span><span id="ver"></span></div>
+</div>
+<script src="popup.js"></script>
+<script src="popup-extra.js"></script>

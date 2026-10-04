@@ -1,0 +1,882 @@
+[
+  {
+    "version": "4.34.1",
+    "title": "Instant and glassy",
+    "items": [
+      {
+        "text": "Changes show instantly — switching or ticking a wallet, turning risk rules on, saving a limit, adding or deleting an alert now updates the Settings window right away — no more leaving the section and coming back.",
+        "html": "<b>Changes show instantly</b> — switching or ticking a wallet, turning risk rules on, saving a limit, adding or deleting an alert now updates the Settings window right away — no more leaving the section and coming back."
+      },
+      {
+        "text": "Liquid glass — the Settings window lets the page show through, blurred, and every card, button and switch gets a glass finish with a light edge.",
+        "html": "<b>Liquid glass</b> — the Settings window lets the page show through, blurred, and every card, button and switch gets a glass finish with a light edge."
+      },
+      {
+        "text": "Buttons respond — hover lifts, a click presses, switches spring — on every control of the Settings window.",
+        "html": "<b>Buttons respond</b> — hover lifts, a click presses, switches spring — on every control of the Settings window."
+      },
+      {
+        "text": "Small fixes — “Open on the site ↗” stays on one line, and the scrollbars are thin and quiet.",
+        "html": "<b>Small fixes</b> — “Open on the site ↗” stays on one line, and the scrollbars are thin and quiet."
+      }
+    ]
+  },
+  {
+    "version": "4.34.0",
+    "title": "A new Settings window",
+    "items": [
+      {
+        "text": "A new Settings window — glassy surfaces with a fine white edge, a sidebar grouped into Overview, Training, Trading, Look & sharing, Community and About, larger buttons, fields and switches, and even spacing everywhere.",
+        "html": "<b>A new Settings window</b> — glassy surfaces with a fine white edge, a sidebar grouped into Overview, Training, Trading, Look &amp; sharing, Community and About, larger buttons, fields and switches, and even spacing everywhere."
+      },
+      {
+        "text": "Replay score fixed — stopping a run with a position still open now counts it in won and best trade, and the side panel shows it as “+ 1 open” instead of 0.",
+        "html": "<b>Replay score fixed</b> — stopping a run with a position still open now counts it in won and best trade, and the side panel shows it as “+ 1 open” instead of 0."
+      },
+      {
+        "text": "Cleaner replay axis — the price label next to the current-price tag no longer shows through it.",
+        "html": "<b>Cleaner replay axis</b> — the price label next to the current-price tag no longer shows through it."
+      },
+      {
+        "text": "Panel header — “Sell %” no longer wraps onto two lines in a narrow panel.",
+        "html": "<b>Panel header</b> — “Sell %” no longer wraps onto two lines in a narrow panel."
+      }
+    ]
+  },
+  {
+    "version": "4.33.0",
+    "title": "Many wallets, one click",
+    "items": [
+      {
+        "text": "Trade with several wallets at once — tick wallets in the switcher above the panel (or Trade with it too in Paper wallets): every buy spends the same amount in each ticked wallet, every sell sells the same share of each position, and your exit lines are placed in each. A click on a wallet's name still switches to it alone. The button shows +2 and the total balance when several wallets trade together.",
+        "html": "<b>Trade with several wallets at once</b> — tick wallets in the switcher above the panel (or Trade with it too in Paper wallets): every buy spends the same amount in each ticked wallet, every sell sells the same share of each position, and your exit lines are placed in each. A click on a wallet's name still switches to it alone. The button shows +2 and the total balance when several wallets trade together."
+      },
+      {
+        "text": "Orders of hidden wallets fire — TP, SL and limit orders now trigger in every paper wallet, not only the one shown in the panel, with a toast naming the wallet.",
+        "html": "<b>Orders of hidden wallets fire</b> — TP, SL and limit orders now trigger in every paper wallet, not only the one shown in the panel, with a toast naming the wallet."
+      },
+      {
+        "text": "PNL replay sample fixed — Preview with a sample showed −100% while the position was open and a flat chart; it now plays a real-looking trade with the right figures.",
+        "html": "<b>PNL replay sample fixed</b> — Preview with a sample showed −100% while the position was open and a flat chart; it now plays a real-looking trade with the right figures."
+      }
+    ]
+  },
+  {
+    "version": "4.32.0",
+    "title": "Switch wallets, replay like a pro",
+    "items": [
+      {
+        "text": "Wallet switcher on the panel — a button sits on top of the trade panel, like Terminal's: your active paper wallet and its balance; one click lists every wallet with its balance, trades and PNL, another switches. Create a wallet right from the list. It follows the panel when you move it, and can be turned off in Paper wallets.",
+        "html": "<b>Wallet switcher on the panel</b> — a button sits on top of the trade panel, like Terminal's: your active paper wallet and its balance; one click lists every wallet with its balance, trades and PNL, another switches. Create a wallet right from the list. It follows the panel when you move it, and can be turned off in Paper wallets."
+      },
+      {
+        "text": "Replay, rebuilt — pick the start by dragging a bar under the chart, then play at 1× to 25× or step candle by candle. Prices now travel inside each candle, your own fees apply, your TP / SL exit lines trigger on their own, and you can switch to 3m or 5m candles. Crosshair with open / high / low / close, wheel to zoom, a fills log, keyboard shortcuts (Space, →, B, S). Stop whenever you want: the score shows win rate, best trade, max drawdown and what holding would have done — and the candles you didn't see appear, faded.",
+        "html": "<b>Replay, rebuilt</b> — pick the start by dragging a bar under the chart, then play at 1× to 25× or step candle by candle. Prices now travel inside each candle, your own fees apply, your TP / SL exit lines trigger on their own, and you can switch to 3m or 5m candles. Crosshair with open / high / low / close, wheel to zoom, a fills log, keyboard shortcuts (Space, →, B, S). Stop whenever you want: the score shows win rate, best trade, max drawdown and what holding would have done — and the candles you didn't see appear, faded."
+      },
+      {
+        "text": "PNL replay section — the video of a trade now has its own section in Settings, next to PNL card: play your last trade, set its speed and background, or preview it on a sample.",
+        "html": "<b>PNL replay section</b> — the video of a trade now has its own section in Settings, next to PNL card: play your last trade, set its speed and background, or preview it on a sample."
+      },
+      {
+        "text": "Cleaner spacing everywhere — every card of the settings window now uses the same padding and the same gaps between rows, buttons and notes; the Today recap no longer glues its numbers to the list below, wallet rows and alert rows are aligned, and the calendar card lost its stray top gap.",
+        "html": "<b>Cleaner spacing everywhere</b> — every card of the settings window now uses the same padding and the same gaps between rows, buttons and notes; the Today recap no longer glues its numbers to the list below, wallet rows and alert rows are aligned, and the calendar card lost its stray top gap."
+      }
+    ]
+  },
+  {
+    "version": "4.31.1",
+    "title": "Your chart, your call",
+    "items": [
+      {
+        "text": "Chart section — the ghost line, past entry zones and top-trader bubbles now have their own Settings section, Chart, with one switch each — turn off what you don't want on the chart.",
+        "html": "<b>Chart section</b> — the ghost line, past entry zones and top-trader bubbles now have their own Settings section, Chart, with one switch each — turn off what you don't want on the chart."
+      },
+      {
+        "text": "Clearer ghost line — it now reads « −35% since you sold · good exit » or « +80% since you sold · 0.4 SOL missed » instead of « sold well: dodged ».",
+        "html": "<b>Clearer ghost line</b> — it now reads « −35% since you sold · good exit » or « +80% since you sold · 0.4 SOL missed » instead of « sold well: dodged »."
+      },
+      {
+        "text": "The cursor stays a hand — the panel and the settings window no longer rewrite unchanged text several times a second, which made Chrome drop the pointer cursor under the mouse; a resize cursor set by the site no longer leaks into the panel either.",
+        "html": "<b>The cursor stays a hand</b> — the panel and the settings window no longer rewrite unchanged text several times a second, which made Chrome drop the pointer cursor under the mouse; a resize cursor set by the site no longer leaks into the panel either."
+      }
+    ]
+  },
+  {
+    "version": "4.31.0",
+    "title": "Trade better, not just more",
+    "items": [
+      {
+        "text": "Risk rules — a daily loss cap, a daily trade cap and a pause after a losing streak. When a rule trips, new buys and limit orders are refused with the reason; sells always go through. Settings › Risk rules.",
+        "html": "<b>Risk rules</b> — a daily loss cap, a daily trade cap and a pause after a losing streak. When a rule trips, new buys and limit orders are refused with the reason; sells always go through. Settings › Risk rules."
+      },
+      {
+        "text": "Entry score — every new position gets a grade from A to F the moment you buy: chasing a pump, price impact, size against your balance, revenge buys, thin liquidity. Hover the letter next to Sell for the reasons.",
+        "html": "<b>Entry score</b> — every new position gets a grade from A to F the moment you buy: chasing a pump, price impact, size against your balance, revenge buys, thin liquidity. Hover the letter next to Sell for the reasons."
+      },
+      {
+        "text": "Position timer — how long you have held, right in the Sell header.",
+        "html": "<b>Position timer</b> — how long you have held, right in the Sell header."
+      },
+      {
+        "text": "Ladder exits and size helper — one click sets a stepped exit (25% at +50%, a third at +100%, the rest at +200%, stop at −30%), and the Exit lines suggest the buy size that risks 2% of your balance at your stop loss.",
+        "html": "<b>Ladder exits and size helper</b> — one click sets a stepped exit (25% at +50%, a third at +100%, the rest at +200%, stop at −30%), and the Exit lines suggest the buy size that risks 2% of your balance at your stop loss."
+      },
+      {
+        "text": "Ghost mode — after you sell, a dashed line on the chart shows what your tokens would be worth now — amber when you sold too early, grey when you dodged the drop.",
+        "html": "<b>Ghost mode</b> — after you sell, a dashed line on the chart shows what your tokens would be worth now — amber when you sold too early, grey when you dodged the drop."
+      },
+      {
+        "text": "Past entry zones — your previous trades on a token appear as green and red bands on its chart, with their result.",
+        "html": "<b>Past entry zones</b> — your previous trades on a token appear as green and red bands on its chart, with their result."
+      },
+      {
+        "text": "Top-trader bubbles — turn it on in Look › Chart overlays to see the trades of the week's 10 best paper traders on the token you are watching, without following anyone.",
+        "html": "<b>Top-trader bubbles</b> — turn it on in Look › Chart overlays to see the trades of the week's 10 best paper traders on the token you are watching, without following anyone."
+      },
+      {
+        "text": "Today — the recap of your day: profit, best and worst trade, worst hour, and what your habits cost you (quick flips, FOMO entries, revenge buys). After 8 pm a toast offers it once.",
+        "html": "<b>Today</b> — the recap of your day: profit, best and worst trade, worst hour, and what your habits cost you (quick flips, FOMO entries, revenge buys). After 8 pm a toast offers it once."
+      },
+      {
+        "text": "Challenges — 14 goals that reward discipline — cut losses early, no revenge buy for 20 entries, a green week… Unlocked once, kept forever.",
+        "html": "<b>Challenges</b> — 14 goals that reward discipline — cut losses early, no revenge buy for 20 entries, a green week… Unlocked once, kept forever."
+      },
+      {
+        "text": "Paper wallets — several wallets side by side, one per strategy, each with its own balance, positions and history. Switch in one click.",
+        "html": "<b>Paper wallets</b> — several wallets side by side, one per strategy, each with its own balance, positions and history. Switch in one click."
+      },
+      {
+        "text": "Price alerts — pick a market cap (150k, 2m, +50%…) and Blanks tells you when it is crossed — even with the tab closed once desktop alerts are enabled from the toolbar icon.",
+        "html": "<b>Price alerts</b> — pick a market cap (150k, 2m, +50%…) and Blanks tells you when it is crossed — even with the tab closed once desktop alerts are enabled from the toolbar icon."
+      },
+      {
+        "text": "Replay — replay the chart you are on, sped up, and trade its past with a separate 10 SOL wallet. From the Blanks button › Replay this chart.",
+        "html": "<b>Replay</b> — replay the chart you are on, sped up, and trade its past with a separate 10 SOL wallet. From the Blanks button › Replay this chart."
+      }
+    ]
+  },
+  {
+    "version": "4.30.8",
+    "title": "PNL in percent, messages you can see",
+    "items": [
+      {
+        "text": "Your PNL in percent — the last figure of the position row now shows the percentage next to the amount (+64%, −12%, +150%), on an open position and on a token you already closed.",
+        "html": "<b>Your PNL in percent</b> — the last figure of the position row now shows the percentage next to the amount (+64%, −12%, +150%), on an open position and on a token you already closed."
+      },
+      {
+        "text": "Tracking says what happened — picking a pseudo or signing in with Google wrote its answer in the panel, hidden behind the settings window, so a refused pseudo looked like nothing happened. The answer now shows in the window itself, with the exact reason.",
+        "html": "<b>Tracking says what happened</b> — picking a pseudo or signing in with Google wrote its answer in the panel, hidden behind the settings window, so a refused pseudo looked like nothing happened. The answer now shows in the window itself, with the exact reason."
+      }
+    ]
+  },
+  {
+    "version": "4.30.7",
+    "title": "Your record on every token",
+    "items": [
+      {
+        "text": "The position row remembers every token — after you sell out, the row under the buttons no longer drops back to zero: it keeps what you put in, what you took out and your PNL on that token, every trade on it added up, and shows it again whenever you come back to its chart — next week or years later. Your past trades count too.",
+        "html": "<b>The position row remembers every token</b> — after you sell out, the row under the buttons no longer drops back to zero: it keeps what you put in, what you took out and your PNL on that token, every trade on it added up, and shows it again whenever you come back to its chart — next week or years later. Your past trades count too."
+      }
+    ]
+  },
+  {
+    "version": "4.30.6",
+    "title": "Both rows at once on Axiom",
+    "items": [
+      {
+        "text": "Buy and sell get their second row together — on Axiom the second buy row used to appear before the sell one. Drag the panel taller and both halves now switch to two rows at the same moment, like on Terminal.",
+        "html": "<b>Buy and sell get their second row together</b> — on Axiom the second buy row used to appear before the sell one. Drag the panel taller and both halves now switch to two rows at the same moment, like on Terminal."
+      }
+    ]
+  },
+  {
+    "version": "4.30.5",
+    "title": "Type your amounts in one go",
+    "items": [
+      {
+        "text": "Editing an amount keeps the field — with the pencil on, typing in a buy or sell amount threw you out of the field after the first character. You can now type the whole value, and Enter saves.",
+        "html": "<b>Editing an amount keeps the field</b> — with the pencil on, typing in a buy or sell amount threw you out of the field after the first character. You can now type the whole value, and Enter saves."
+      }
+    ]
+  },
+  {
+    "version": "4.30.4",
+    "title": "Their resize, to the pixel",
+    "items": [
+      {
+        "text": "Rows appear exactly as on their instant trade — one row of buys and one of sells while the panel is small, two rows once it is tall enough, and the panel stops growing when the buttons reach 83 px.",
+        "html": "<b>Rows appear exactly as on their instant trade</b> — one row of buys and one of sells while the panel is small, two rows once it is tall enough, and the panel stops growing when the buttons reach 83 px."
+      },
+      {
+        "text": "No more diagnostic text in the panel — the line of internal checks (px, mc, liq…) shown next to Buy while a token had no price is gone.",
+        "html": "<b>No more diagnostic text in the panel</b> — the line of internal checks (px, mc, liq…) shown next to Buy while a token had no price is gone."
+      },
+      {
+        "text": "Their tooltips — the bubbles use the look of their instant trade and show up instantly.",
+        "html": "<b>Their tooltips</b> — the bubbles use the look of their instant trade and show up instantly."
+      }
+    ]
+  },
+  {
+    "version": "4.30.3",
+    "title": "Every control explains itself",
+    "items": [
+      {
+        "text": "Tiny panel, one row each; bigger, two rows each — buy and sell always switch together, never one without the other, and the panel still cannot be shrunk below one row of each.",
+        "html": "<b>Tiny panel, one row each; bigger, two rows each</b> — buy and sell always switch together, never one without the other, and the panel still cannot be shrunk below one row of each."
+      },
+      {
+        "text": "Hover anything to know what it does — every button of the panel, the fee line, the four figures of the position row, the Exit lines and each setting of Trading Settings now show a short explanation in a bubble.",
+        "html": "<b>Hover anything to know what it does</b> — every button of the panel, the fee line, the four figures of the position row, the Exit lines and each setting of Trading Settings now show a short explanation in a bubble."
+      },
+      {
+        "text": "Trading Settings is cleaner — no stray icon before the delay, and « Fill preview on hover » says what it is: hovering a buy or sell button shows the tokens, fees and price impact before you click.",
+        "html": "<b>Trading Settings is cleaner</b> — no stray icon before the delay, and « Fill preview on hover » says what it is: hovering a buy or sell button shows the tokens, fees and price impact before you click."
+      }
+    ]
+  },
+  {
+    "version": "4.30.2",
+    "title": "Everything from the panel",
+    "items": [
+      {
+        "text": "Both rows of buys and both rows of sells, always — small buttons when the panel is small, bigger ones when you drag it taller, the same size on both halves.",
+        "html": "<b>Both rows of buys and both rows of sells, always</b> — small buttons when the panel is small, bigger ones when you drag it taller, the same size on both halves."
+      },
+      {
+        "text": "Fees are set from the panel only — the Execution &amp; fees section is gone from the settings. Click the fee line (or the timer) and the Trading Settings window holds everything: the preset’s slippage, priority fee and tip for each side, the delay, the platform fee, the cashback and the fill previews. The blue outline of a selected field now goes all the way round.",
+        "html": "<b>Fees are set from the panel only</b> — the Execution &amp; fees section is gone from the settings. Click the fee line (or the timer) and the Trading Settings window holds everything: the preset’s slippage, priority fee and tip for each side, the delay, the platform fee, the cashback and the fill previews. The blue outline of a selected field now goes all the way round."
+      },
+      {
+        "text": "A trader’s profile reads like Terminal’s — the realized PNL over 1D / 7D / 30D / All with its zero line, the spread of results from &gt;500% to &lt;−50%, and real tables with their headers: type, token, amount, market cap, age; bought, sold, PNL and ROI per token.",
+        "html": "<b>A trader’s profile reads like Terminal’s</b> — the realized PNL over 1D / 7D / 30D / All with its zero line, the spread of results from &gt;500% to &lt;−50%, and real tables with their headers: type, token, amount, market cap, age; bought, sold, PNL and ROI per token."
+      },
+      {
+        "text": "Stats look like they did in the panel — the same spacing and corners, and hovering a day of the calendar shows its trades again.",
+        "html": "<b>Stats look like they did in the panel</b> — the same spacing and corners, and hovering a day of the calendar shows its trades again."
+      },
+      {
+        "text": "The four figures of the position row are centred, each in an equal cell. The resize cursor no longer shows up around the balance card unless you are on it.",
+        "html": "<b>The four figures of the position row are centred</b>, each in an equal cell. The resize cursor no longer shows up around the balance card unless you are on it."
+      }
+    ]
+  },
+  {
+    "version": "4.30.1",
+    "title": "One row small, two rows tall",
+    "items": [
+      {
+        "text": "Small, the panel shows one row of buys and one of sells — drag it taller and the buttons grow; once they are big enough the second row appears, exactly like their instant trade. The pencil still edits all eight. The default sell row now starts with 10, 25, 50 and 100 %.",
+        "html": "<b>Small, the panel shows one row of buys and one of sells</b> — drag it taller and the buttons grow; once they are big enough the second row appears, exactly like their instant trade. The pencil still edits all eight. The default sell row now starts with 10, 25, 50 and 100 %."
+      },
+      {
+        "text": "The position row reaches both sides and the bottom, at any width, and a click on it switches its figures between SOL and dollars, like theirs.",
+        "html": "<b>The position row reaches both sides and the bottom</b>, at any width, and a click on it switches its figures between SOL and dollars, like theirs."
+      },
+      {
+        "text": "P1, P2 and P3 switch again — dragging the header swallowed the click. And the Exit lines no longer run under the sell half when the panel is resized.",
+        "html": "<b>P1, P2 and P3 switch again</b> — dragging the header swallowed the click. And the Exit lines no longer run under the sell half when the panel is resized."
+      },
+      {
+        "text": "No more bubble after every buy and sell — the sound and the position row say it; only errors still show. The wallet button is gone from the panel, as on theirs.",
+        "html": "<b>No more bubble after every buy and sell</b> — the sound and the position row say it; only errors still show. The wallet button is gone from the panel, as on theirs."
+      },
+      {
+        "text": "Stats and History stop flashing — they were redrawn, animation included, several times a second. The « Show SOL » quick-buy button fits on one line.",
+        "html": "<b>Stats and History stop flashing</b> — they were redrawn, animation included, several times a second. The « Show SOL » quick-buy button fits on one line."
+      }
+    ]
+  },
+  {
+    "version": "4.30.0",
+    "title": "Orders in the panel, fees on every preset",
+    "items": [
+      {
+        "text": "Take profit and stop loss live in the panel now — tick Exit on Terminal (Adv. on Axiom) under the buy buttons: your TP / SL lines, in % of your entry, are placed with every buy and follow your average price. Your open orders on the token sit right below, one click to cancel, with the limit buy next to them. The separate Orders section is gone.",
+        "html": "<b>Take profit and stop loss live in the panel now</b> — tick <b>Exit</b> on Terminal (<b>Adv.</b> on Axiom) under the buy buttons: your TP / SL lines, in % of your entry, are placed with every buy and follow your average price. Your open orders on the token sit right below, one click to cancel, with the limit buy next to them. The separate Orders section is gone."
+      },
+      {
+        "text": "Each preset has its own fees — slippage, priority fee and tip for P1, P2 and P3, one set for buying and one for selling, like on their terminals. Click the fee line under the buttons to change them: a Trading Settings window opens next to the panel, on the preset and the side you clicked.",
+        "html": "<b>Each preset has its own fees</b> — slippage, priority fee and tip for P1, P2 and P3, one set for buying and one for selling, like on their terminals. Click the fee line under the buttons to change them: a Trading Settings window opens next to the panel, on the preset and the side you clicked."
+      },
+      {
+        "text": "Resizing the panel resizes the buttons — drag the corner down and the two grids grow to fill the height, as on their instant trade. And the panel can no longer be shrunk over its own content.",
+        "html": "<b>Resizing the panel resizes the buttons</b> — drag the corner down and the two grids grow to fill the height, as on their instant trade. And the panel can no longer be shrunk over its own content."
+      },
+      {
+        "text": "The settings window is back in order — History and Stats showed the tracking page on top of their own content; each section now shows only itself. Execution &amp; fees is rebuilt around your presets, Tracking and its feed are one section, and the list follows what you use most.",
+        "html": "<b>The settings window is back in order</b> — History and Stats showed the tracking page on top of their own content; each section now shows only itself. Execution &amp; fees is rebuilt around your presets, Tracking and its feed are one section, and the list follows what you use most."
+      },
+      {
+        "text": "The trade panel only opens on a token chart — from the button at the bottom right it used to open anywhere, half empty. Off a chart that entry is greyed out; the settings stay one click away everywhere.",
+        "html": "<b>The trade panel only opens on a token chart</b> — from the button at the bottom right it used to open anywhere, half empty. Off a chart that entry is greyed out; the settings stay one click away everywhere."
+      }
+    ]
+  },
+  {
+    "version": "4.29.4",
+    "title": "Their stylesheets, their icons",
+    "items": [
+      {
+        "text": "Both shapes are now built from the reference panels’ own code — Terminal’s stylesheet and SVG set, Axiom’s stylesheet and Remix glyphs, used as they are instead of redrawn by hand. The keyboard, pencil, gear, timer, wallet and close marks, the gas / coin / slippage marks on the settings line, the 328px and 348px widths, the amount grids and the position row are theirs, value for value.",
+        "html": "<b>Both shapes are now built from the reference panels’ own code</b> — Terminal’s stylesheet and SVG set, Axiom’s stylesheet and Remix glyphs, used as they are instead of redrawn by hand. The keyboard, pencil, gear, timer, wallet and close marks, the gas / coin / slippage marks on the settings line, the 328px and 348px widths, the amount grids and the position row are theirs, value for value."
+      },
+      {
+        "text": "The position row reaches the bottom edge on Terminal — their panel drops its bottom padding as soon as that row is shown, so the row sits against the border and the lines between the four figures run its full height. Ours kept the padding and left the lines hanging.",
+        "html": "<b>The position row reaches the bottom edge on Terminal</b> — their panel drops its bottom padding as soon as that row is shown, so the row sits against the border and the lines between the four figures run its full height. Ours kept the padding and left the lines hanging."
+      },
+      {
+        "text": "Axiom’s position row reads like theirs — the SOL mark before each number, bought in green, sold in red, the rest neutral.",
+        "html": "<b>Axiom’s position row reads like theirs</b> — the SOL mark before each number, bought in green, sold in red, the rest neutral."
+      },
+      {
+        "text": "The resize corner only shows on hover, and the empty strip that sat under the position row on Axiom is gone: the breathing room belongs above that row, not below it.",
+        "html": "<b>The resize corner only shows on hover</b>, and the empty strip that sat under the position row on Axiom is gone: the breathing room belongs above that row, not below it."
+      }
+    ]
+  },
+  {
+    "version": "4.29.0",
+    "title": "The panel is their instant trade",
+    "items": [
+      {
+        "text": "Blanks now takes the shape of the terminal it sits on — the panel is laid out like their instant trade: their header with the presets and the pencil, their rows of amounts, their settings line, their position row. Terminal’s shape on Terminal, Axiom’s on Axiom, and Look › Style forces either one everywhere.",
+        "html": "<b>Blanks now takes the shape of the terminal it sits on</b> — the panel is laid out like their instant trade: their header with the presets and the pencil, their rows of amounts, their settings line, their position row. Terminal’s shape on Terminal, Axiom’s on Axiom, and <b>Look › Style</b> forces either one everywhere."
+      },
+      {
+        "text": "No tab bar any more — Orders, Stats, History and the Track feed moved behind the gear, as sections of the settings window. Their interface gains no button that is not theirs.",
+        "html": "<b>No tab bar any more</b> — Orders, Stats, History and the Track feed moved behind the gear, as sections of the settings window. Their interface gains no button that is not theirs."
+      },
+      {
+        "text": "Amounts are edited where they are — the pencil in the header turns both grids into fields at once, buy and sell together, and a second click saves. The separate amount box is gone, exactly as on their panel.",
+        "html": "<b>Amounts are edited where they are</b> — the pencil in the header turns both grids into fields at once, buy and sell together, and a second click saves. The separate amount box is gone, exactly as on their panel."
+      },
+      {
+        "text": "The sell half no longer disappears — with no position it stays in place, dimmed, instead of leaving half a panel behind.",
+        "html": "<b>The sell half no longer disappears</b> — with no position it stays in place, dimmed, instead of leaving half a panel behind."
+      }
+    ]
+  },
+  {
+    "version": "4.28.5",
+    "title": "Quick buy cannot touch a real order",
+    "items": [
+      {
+        "text": "Blanks now places its button on Axiom’s lists — it placed none at all. Their buy control was only recognised by Terminal’s class names and by a label ending in SOL; Axiom names nothing and writes only the amount. In « replace their button » mode, not finding it meant placing nothing and saying nothing, so the only button on the row was the site’s real one. Update before using a list on Axiom.",
+        "html": "<b>Blanks now places its button on Axiom’s lists</b> — it placed none at all. Their buy control was only recognised by Terminal’s class names and by a label ending in <span class=\"mono\">SOL</span>; Axiom names nothing and writes only the amount. In « replace their button » mode, not finding it meant placing nothing and saying nothing, so the only button on the row was the site’s real one. <b>Update before using a list on Axiom.</b>"
+      },
+      {
+        "text": "Our button is never placed inside their buy control — where their control has no name to grab, Blanks used to drop its button inside it. A click then reached the handler sitting above it, the way React delivers events, and that handler is the real order. Blanks now places its button outside their whole block.",
+        "html": "<b>Our button is never placed inside their buy control</b> — where their control has no name to grab, Blanks used to drop its button inside it. A click then reached the handler sitting above it, the way React delivers events, and that handler is the real order. Blanks now places its button outside their whole block."
+      },
+      {
+        "text": "A click on a Blanks button stops at Blanks — the filter that kept our clicks out of their page was installed once their app had already been listening, and an app listening on the window itself was served first. It now loads before their app, and swallows the event outright.",
+        "html": "<b>A click on a Blanks button stops at Blanks</b> — the filter that kept our clicks out of their page was installed once their app had already been listening, and an app listening on the window itself was served first. It now loads before their app, and swallows the event outright."
+      },
+      {
+        "text": "Blanks says when it cannot take a list over — if their button is nowhere to be found, Blanks falls back to its own badge in the corner of the row and warns you that the site’s real button is still live next to ours, instead of leaving the row untouched.",
+        "html": "<b>Blanks says when it cannot take a list over</b> — if their button is nowhere to be found, Blanks falls back to its own badge in the corner of the row and warns you that the site’s real button is still live next to ours, instead of leaving the row untouched."
+      }
+    ]
+  },
+  {
+    "version": "4.28.4",
+    "title": "Everybody on the board",
+    "items": [
+      {
+        "text": "The leaderboard lists everyone — it only held the people who had closed a trade inside the window you were looking at, so a board with six accounts showed three rows and looked broken. Every pseudo is on it now, in order: the traders first, then the accounts that have only bought, then the ones yet to place anything, with dashes instead of a ROI.",
+        "html": "<b>The leaderboard lists everyone</b> — it only held the people who had closed a trade inside the window you were looking at, so a board with six accounts showed three rows and looked broken. Every pseudo is on it now, in order: the traders first, then the accounts that have only bought, then the ones yet to place anything, with dashes instead of a ROI."
+      },
+      {
+        "text": "Hidden is anonymous, not absent — turning the leaderboard switch off used to remove you from the ranking entirely. Your row stays now, under Anonymous, with no name, no photo and no record to open; you keep your place and your rank tag.",
+        "html": "<b>Hidden is anonymous, not absent</b> — turning the leaderboard switch off used to remove you from the ranking entirely. Your row stays now, under <span class=\"mono\">Anonymous</span>, with no name, no photo and no record to open; you keep your place and your rank tag."
+      },
+      {
+        "text": "A quiet window says so — when nobody has closed a trade over the period, the board says it above the rows and offers the next window, instead of showing an empty table.",
+        "html": "<b>A quiet window says so</b> — when nobody has closed a trade over the period, the board says it above the rows and offers the next window, instead of showing an empty table."
+      },
+      {
+        "text": "Leaderboard in the top bar — the link was lost among the page anchors; it is a button now, next to Download, on every page of the site.",
+        "html": "<b>Leaderboard in the top bar</b> — the link was lost among the page anchors; it is a button now, next to Download, on every page of the site."
+      }
+    ]
+  },
+  {
+    "version": "4.28.3",
+    "title": "The right price on Axiom",
+    "items": [
+      {
+        "text": "Accurate prices on Axiom's Ethereum, Base, Robinhood and BNB pages — on those pages Axiom writes a single significant digit ($0.0₄4 for a pool trading at 0.00004292, seven percent away) and, unlike on Solana, its tab title carries no market cap to correct it. Blanks now recognises a price that coarse and quotes on the pool instead; the live price coming from the chart still takes precedence over both.",
+        "html": "<b>Accurate prices on Axiom's Ethereum, Base, Robinhood and BNB pages</b> — on those pages Axiom writes a single significant digit (<span class=\"mono\">$0.0₄4</span> for a pool trading at <span class=\"mono\">0.00004292</span>, seven percent away) and, unlike on Solana, its tab title carries no market cap to correct it. Blanks now recognises a price that coarse and quotes on the pool instead; the live price coming from the chart still takes precedence over both."
+      },
+      {
+        "text": "Market cap read from their header — on those same pages the tab title says nothing but Axiom, so a token showed no market cap at all until DexScreener answered. The MC figure of their own header is now read directly.",
+        "html": "<b>Market cap read from their header</b> — on those same pages the tab title says nothing but <span class=\"mono\">Axiom</span>, so a token showed no market cap at all until DexScreener answered. The <span class=\"mono\">MC</span> figure of their own header is now read directly."
+      },
+      {
+        "text": "Quick buy finds their button on every chain — it was recognised only by a label ending in SOL, so on an Ethereum or BNB list, where theirs reads 0.01 ETH, our button fell back to the corner of the row.",
+        "html": "<b>Quick buy finds their button on every chain</b> — it was recognised only by a label ending in <span class=\"mono\">SOL</span>, so on an Ethereum or BNB list, where theirs reads <span class=\"mono\">0.01 ETH</span>, our button fell back to the corner of the row."
+      }
+    ]
+  },
+  {
+    "version": "4.28.2",
+    "title": "You can tell when you are hidden",
+    "items": [
+      {
+        "text": "The leaderboard says which window is empty — « nobody closed a trade in the last 24 hours », with one button to look at 7 days, 30 days or all time, instead of a blank table that looked broken.",
+        "html": "<b>The leaderboard says which window is empty</b> — « nobody closed a trade in the last 24 hours », with one button to look at 7 days, 30 days or all time, instead of a blank table that looked broken."
+      },
+      {
+        "text": "Being off the ranking is now visible — when the switch is off, the Track tab and the Leaderboard section say it in plain words: you are hidden from the public ranking, your followers still see your trades. That switch was the reason a very active pseudo could be missing from the board.",
+        "html": "<b>Being off the ranking is now visible</b> — when the switch is off, the Track tab and the Leaderboard section say it in plain words: you are hidden from the public ranking, your followers still see your trades. That switch was the reason a very active pseudo could be missing from the board."
+      }
+    ]
+  },
+  {
+    "version": "4.28.1",
+    "title": "Following, without the reload",
+    "items": [
+      {
+        "text": "A pseudo you add shows up at once — on a page with no token open (trenches, Pulse, your portfolio), the Tracking section of the settings only redrew when you changed tab: the trader was followed, but the list looked empty. It follows the state now, token or not.",
+        "html": "<b>A pseudo you add shows up at once</b> — on a page with no token open (trenches, Pulse, your portfolio), the Tracking section of the settings only redrew when you changed tab: the trader was followed, but the list looked empty. It follows the state now, token or not."
+      },
+      {
+        "text": "One spelling per trader — pseudos are unique whatever the case, so Ledka and ledka are the same person; your list now always shows the spelling the account really has, and a duplicate that differed only by case is cleaned up. If your own pseudo has the wrong case, ✎ in the Track tab fixes it — people who follow you keep following you and see the correction.",
+        "html": "<b>One spelling per trader</b> — pseudos are unique whatever the case, so <span class=\"mono\">Ledka</span> and <span class=\"mono\">ledka</span> are the same person; your list now always shows the spelling the account really has, and a duplicate that differed only by case is cleaned up. If your own pseudo has the wrong case, <b>✎</b> in the Track tab fixes it — people who follow you keep following you and see the correction."
+      }
+    ]
+  },
+  {
+    "version": "4.28.0",
+    "title": "Nothing leaks onto their page",
+    "items": [
+      {
+        "text": "Your keystrokes stay in Blanks — typing an amount or a pseudo in our panel used to reach Terminal and Axiom underneath, where the same letters are shortcuts: their app reacted while you were simply filling a field. A guard now installs itself before their page boots and keeps every key pressed inside Blanks inside Blanks. Clicks in our windows no longer reach their page either.",
+        "html": "<b>Your keystrokes stay in Blanks</b> — typing an amount or a pseudo in our panel used to reach Terminal and Axiom underneath, where the same letters are shortcuts: their app reacted while you were simply filling a field. A guard now installs itself before their page boots and keeps every key pressed inside Blanks inside Blanks. Clicks in our windows no longer reach their page either."
+      },
+      {
+        "text": "Geist on Axiom too — Axiom ships the same typeface under another name (Geist Variable), so the panel fell back to the system font there. It now looks for both names, on both terminals, and the Look section stops calling the font missing when it is right there.",
+        "html": "<b>Geist on Axiom too</b> — Axiom ships the same typeface under another name (<span class=\"mono\">Geist Variable</span>), so the panel fell back to the system font there. It now looks for both names, on both terminals, and the Look section stops calling the font missing when it is right there."
+      },
+      {
+        "text": "No more dead cursor — while a window was closing, its veil stayed clickable for a fifth of a second above their page: the pointer felt frozen and a click could land behind. A closed window never catches the mouse again.",
+        "html": "<b>No more dead cursor</b> — while a window was closing, its veil stayed clickable for a fifth of a second above their page: the pointer felt frozen and a click could land behind. A closed window never catches the mouse again."
+      }
+    ]
+  },
+  {
+    "version": "4.27.0",
+    "title": "Five chains, five wallets",
+    "items": [
+      {
+        "text": "Ethereum, Base, Robinhood Chain and BNB Chain — Blanks now works on every chain the two terminals serve, not only Solana. Open a token on any of them and the panel prices it, fills it and marks the chart exactly as it does on Solana.",
+        "html": "<b>Ethereum, Base, Robinhood Chain and BNB Chain</b> — Blanks now works on every chain the two terminals serve, not only Solana. Open a token on any of them and the panel prices it, fills it and marks the chart exactly as it does on Solana."
+      },
+      {
+        "text": "One paper wallet per currency — 10 SOL, 1 ETH (shared by Ethereum, Base and Robinhood) and 10 BNB. A trade on Base is paid in ETH: amounts, balance, PNL, stats, history and the balance card all switch to the currency of the chain you are on, and no total ever mixes two of them.",
+        "html": "<b>One paper wallet per currency</b> — 10 SOL, 1 ETH (shared by Ethereum, Base and Robinhood) and 10 BNB. A trade on Base is paid in ETH: amounts, balance, PNL, stats, history and the balance card all switch to the currency of the chain you are on, and no total ever mixes two of them."
+      },
+      {
+        "text": "Amounts and quick buy per chain — each currency has its own three preset slots and its own instant-buy amount, and on a list that mixes chains every button carries the currency of its own row.",
+        "html": "<b>Amounts and quick buy per chain</b> — each currency has its own three preset slots and its own instant-buy amount, and on a list that mixes chains every button carries the currency of its own row."
+      },
+      {
+        "text": "Real fees per chain — the priority fee and the Jito tip stay on Solana; EVM chains pay gas instead (editable in Execution), and the DEX fee follows the pool: Uniswap, PancakeSwap, Aerodrome, the BNB launchpads.",
+        "html": "<b>Real fees per chain</b> — the priority fee and the Jito tip stay on Solana; EVM chains pay gas instead (editable in Execution), and the DEX fee follows the pool: Uniswap, PancakeSwap, Aerodrome, the BNB launchpads."
+      },
+      {
+        "text": "What you share travels with its currency — a trade published from Base shows as ETH in your followers' feed and on your record, while the leaderboard keeps counting in SOL equivalent so every chain is compared fairly.",
+        "html": "<b>What you share travels with its currency</b> — a trade published from Base shows as ETH in your followers' feed and on your record, while the leaderboard keeps counting in SOL equivalent so every chain is compared fairly."
+      }
+    ]
+  },
+  {
+    "version": "4.26.0",
+    "title": "Your rank, next to your name",
+    "items": [
+      {
+        "text": "Your rank follows your pseudo — a small #12 sits next to it everywhere it shows: the Track tab, the people you follow, the feed, the search, a trader’s card, the bubbles on your chart and the leaderboard on the site. Gold, silver and bronze for the podium. It is the public ranking over the last 7 days, by realized PNL; turn On the leaderboard off and the tag goes with it.",
+        "html": "<b>Your rank follows your pseudo</b> — a small <b>#12</b> sits next to it everywhere it shows: the Track tab, the people you follow, the feed, the search, a trader’s card, the bubbles on your chart and the leaderboard on the site. Gold, silver and bronze for the podium. It is the public ranking over the last 7 days, by realized PNL; turn <b>On the leaderboard</b> off and the tag goes with it."
+      },
+      {
+        "text": "A Leaderboard section in the settings — the ranking inside the panel: 24 hours, 7 days, 30 days or all time, where you stand, your PNL and win rate, and the top 25 with a click to open anyone’s record. The switch to appear in it, or not, is there too.",
+        "html": "<b>A Leaderboard section in the settings</b> — the ranking inside the panel: 24 hours, 7 days, 30 days or all time, where you stand, your PNL and win rate, and the top 25 with a click to open anyone’s record. The switch to appear in it, or not, is there too."
+      },
+      {
+        "text": "A page for the leaderboard — trade-blanks.com/leaderboard now has its own page: 100 traders, a search, the four periods, and the totals of what everyone paper-traded.",
+        "html": "<b>A page for the leaderboard</b> — trade-blanks.com/leaderboard now has its own page: 100 traders, a search, the four periods, and the totals of what everyone paper-traded."
+      },
+      {
+        "text": "The panel grows downward — the grip at the bottom right now changes the height as well as the width; past four amounts, the instant-buy rows keep their two lines instead of being cut off.",
+        "html": "<b>The panel grows downward</b> — the grip at the bottom right now changes the height as well as the width; past four amounts, the instant-buy rows keep their two lines instead of being cut off."
+      },
+      {
+        "text": "Instant buy, several amounts — the quick-buy button on their lists can carry up to eight amounts, on two rows like Terminal and Axiom, on trenches and on Pulse.",
+        "html": "<b>Instant buy, several amounts</b> — the quick-buy button on their lists can carry up to eight amounts, on two rows like Terminal and Axiom, on trenches and on Pulse."
+      },
+      {
+        "text": "The green glow under the site’s header no longer draws a rectangle across the page.",
+        "html": "The green glow under the site’s header no longer draws a rectangle across the page."
+      }
+    ]
+  },
+  {
+    "version": "4.25.0",
+    "title": "Your call on the leaderboard",
+    "items": [
+      {
+        "text": "On the leaderboard, or not — a switch in the Track tab, right under your pseudo. On by default; turn it off and you keep sharing with the people who follow you without appearing in the public ranking. The setting lives on your account, so it follows you from one computer to another.",
+        "html": "<b>On the leaderboard, or not</b> — a switch in the <b>Track</b> tab, right under your pseudo. On by default; turn it off and you keep sharing with the people who follow you without appearing in the public ranking. The setting lives on your account, so it follows you from one computer to another."
+      },
+      {
+        "text": "Open anyone's record from the site — a click on a trader in the leaderboard opens the same card as in the extension: balance, the curve of their realized PNL, win rate, the coins they traded and every trade behind it.",
+        "html": "<b>Open anyone's record from the site</b> — a click on a trader in the leaderboard opens the same card as in the extension: balance, the curve of their realized PNL, win rate, the coins they traded and every trade behind it."
+      },
+      {
+        "text": "The site's footer was rebuilt — status, release notes by mail, and every control with a proper hover, focus and pressed state.",
+        "html": "The site's footer was rebuilt — status, release notes by mail, and every control with a proper hover, focus and pressed state."
+      }
+    ]
+  },
+  {
+    "version": "4.24.0",
+    "title": "Amounts you can edit, a leaderboard",
+    "items": [
+      {
+        "text": "Amounts, edited from the panel — the sliders button next to Buy and Sell turns the row into fields: change a figure, add one (up to eight per side), drop one, done. No trip through the settings, and each preset slot keeps its own.",
+        "html": "<b>Amounts, edited from the panel</b> — the sliders button next to <b>Buy</b> and <b>Sell</b> turns the row into fields: change a figure, add one (up to eight per side), drop one, done. No trip through the settings, and each preset slot keeps its own."
+      },
+      {
+        "text": "Two rows of amounts — past four, they wrap onto a second row like Terminal and Axiom, four per row; a narrow panel folds them two by two.",
+        "html": "<b>Two rows of amounts</b> — past four, they wrap onto a second row like Terminal and Axiom, four per row; a narrow panel folds them two by two."
+      },
+      {
+        "text": "Leaderboard — trade-blanks.com now ranks the traders who share their paper trades: 24h, 7 days, 30 days or all time, with trades, volume, ROI and win rate. Turn sharing on in the Track tab and you are on it.",
+        "html": "<b>Leaderboard</b> — trade-blanks.com now ranks the traders who share their paper trades: 24h, 7 days, 30 days or all time, with trades, volume, ROI and win rate. Turn sharing on in the Track tab and you are on it."
+      },
+      {
+        "text": "The site got a new coat: warmer light, deeper dark, a showcase of what the panel actually does, and the live demo in a browser frame.",
+        "html": "The site got a new coat: warmer light, deeper dark, a showcase of what the panel actually does, and the live demo in a browser frame."
+      }
+    ]
+  },
+  {
+    "version": "4.23.0",
+    "title": "The replay is your chart",
+    "items": [
+      {
+        "text": "Real candles in the replay and on the PNL card — both now draw the very candles you traded on, in their colours, with the timeframe and the clock under them, plus a few candles of context around the trade. Before, anything shorter than a few minutes fell back to a reconstructed price path; three real candles are enough now, and the card shows candles by default.",
+        "html": "<b>Real candles in the replay and on the PNL card</b> — both now draw the very candles you traded on, in their colours, with the timeframe and the clock under them, plus a few candles of context around the trade. Before, anything shorter than a few minutes fell back to a reconstructed price path; three real candles are enough now, and the card shows candles by default."
+      },
+      {
+        "text": "Replay speed is real speed — the button now reads 1:1, 2×, 4×, 10× or Auto, and 1:1 means one second of chart per second: a two-second candle takes two seconds on screen. It shows the resulting length next to it, and falls back to Auto when a hold is too long to sit through.",
+        "html": "<b>Replay speed is real speed</b> — the button now reads 1:1, 2×, 4×, 10× or Auto, and 1:1 means one second of chart per second: a two-second candle takes two seconds on screen. It shows the resulting length next to it, and falls back to Auto when a hold is too long to sit through."
+      },
+      {
+        "text": "Sharper GIFs — exports go from 640×360 at 12 fps to 960×540 at 15, with a wider palette, the brand colours pinned in it and ordered dithering, so gradients stop banding.",
+        "html": "<b>Sharper GIFs</b> — exports go from 640×360 at 12 fps to 960×540 at 15, with a wider palette, the brand colours pinned in it and ordered dithering, so gradients stop banding."
+      },
+      {
+        "text": "The current-price pill on the replay is centred again, and the price step it covers is no longer printed underneath it.",
+        "html": "The current-price pill on the replay is centred again, and the price step it covers is no longer printed underneath it."
+      },
+      {
+        "text": "Dragging fixed — with the panel or the balance card scaled, they ran away from the cursor: a 120 px drag moved the card 192 at 1.6×. They now follow the pointer exactly at every scale, and the card fades while you move it, like their PnL Tracker.",
+        "html": "<b>Dragging fixed</b> — with the panel or the balance card scaled, they ran away from the cursor: a 120 px drag moved the card 192 at 1.6×. They now follow the pointer exactly at every scale, and the card fades while you move it, like their PnL Tracker."
+      }
+    ]
+  },
+  {
+    "version": "4.22.0",
+    "title": "Open anyone’s stats",
+    "items": [
+      {
+        "text": "Trader card — click a pseudo in the feed, a chip in Following, a bubble on the chart or a name in the search, and their whole paper record opens: what they still hold, the curve of their realized PNL, and a Performance block (realized PNL, TXNS, coins traded, wins, win rate, losses). Five tabs underneath: Trades History, Most Profitable, Active Positions, Transfers and Dev Tokens — the last two are empty on purpose, nothing here ever touches a chain.",
+        "html": "<b>Trader card</b> — click a pseudo in the feed, a chip in Following, a bubble on the chart or a name in the search, and their whole paper record opens: what they still hold, the curve of their realized PNL, and a Performance block (realized PNL, TXNS, coins traded, wins, win rate, losses). Five tabs underneath: Trades History, Most Profitable, Active Positions, Transfers and Dev Tokens — the last two are empty on purpose, nothing here ever touches a chain."
+      },
+      {
+        "text": "Tracking in the settings — a new section of the settings window holds your pseudo, your Google link, your photo and the people you follow. The live feed stays in the Track tab of the panel.",
+        "html": "<b>Tracking in the settings</b> — a new section of the settings window holds your pseudo, your Google link, your photo and the people you follow. The live feed stays in the Track tab of the panel."
+      },
+      {
+        "text": "Feed by pages — twelve lines at a time instead of one long wall; the 300 trades kept in memory are all reachable now.",
+        "html": "<b>Feed by pages</b> — twelve lines at a time instead of one long wall; the 300 trades kept in memory are all reachable now."
+      },
+      {
+        "text": "The −5 / −10 / −25 / −50% chips of Limit Buy no longer stick to the price field.",
+        "html": "The −5 / −10 / −25 / −50% chips of <b>Limit Buy</b> no longer stick to the price field."
+      }
+    ]
+  },
+  {
+    "version": "4.21.0",
+    "title": "Trim your sounds",
+    "items": [
+      {
+        "text": "Sound trimmer — a buy or sell file you load opens in a trimmer: waveform, two handles, play the selection, save. Keep just the hit you want (8 s max); Trim buy / Trim sell reopen it later. Files up to 6 MB are accepted, only the trimmed part is stored.",
+        "html": "<b>Sound trimmer</b> — a buy or sell file you load opens in a trimmer: waveform, two handles, play the selection, save. Keep just the hit you want (8 s max); <b>Trim buy</b> / <b>Trim sell</b> reopen it later. Files up to 6 MB are accepted, only the trimmed part is stored."
+      }
+    ]
+  },
+  {
+    "version": "4.20.0",
+    "title": "Card you can resize, steadier prices",
+    "items": [
+      {
+        "text": "Balance card — drag its edges or corners to resize it, like their PnL Tracker; the text and the SOL mark scale with it. Hover the card for a small gear (its settings) top-right and a × (hide) top-left.",
+        "html": "<b>Balance card</b> — drag its edges or corners to resize it, like their PnL Tracker; the text and the SOL mark scale with it. Hover the card for a small gear (its settings) top-right and a × (hide) top-left."
+      },
+      {
+        "text": "Market cap in the hover card is the one at the moment of the fill and no longer drifts with later quotes.",
+        "html": "<b>Market cap in the hover card</b> is the one at the moment of the fill and no longer drifts with later quotes."
+      },
+      {
+        "text": "Position value on a fresh token — when the aggregator lags the chart by more than 30% during a pump, the page's own price now wins; the PNL could show red while the candle was well above your entry.",
+        "html": "<b>Position value on a fresh token</b> — when the aggregator lags the chart by more than 30% during a pump, the page's own price now wins; the PNL could show red while the candle was well above your entry."
+      },
+      {
+        "text": "Bubbles and lines no longer shift by a pixel or two as the supply estimate wobbles between quotes.",
+        "html": "Bubbles and lines no longer shift by a pixel or two as the supply estimate wobbles between quotes."
+      }
+    ]
+  },
+  {
+    "version": "4.19.0",
+    "title": "What's new, by email if you like",
+    "items": [
+      {
+        "text": "What's new — after an update, one click on the toast opens the new Updates section of the settings window with the changelog; the version you had is marked.",
+        "html": "<b>What's new</b> — after an update, one click on the toast opens the new <b>Updates</b> section of the settings window with the changelog; the version you had is marked."
+      },
+      {
+        "text": "One email per version — leave your address in Updates (or on this page) and you get the changelog when a version ships. You confirm from your inbox, every email has an unsubscribe link, and the address is used for nothing else.",
+        "html": "<b>One email per version</b> — leave your address in Updates (or on this page) and you get the changelog when a version ships. You confirm from your inbox, every email has an unsubscribe link, and the address is used for nothing else."
+      }
+    ]
+  },
+  {
+    "version": "4.18.0",
+    "title": "Google link, display name",
+    "items": [
+      {
+        "text": "Link with Google — Track tab: attach your pseudo to your Google account. Reinstall, change computer, lose the folder: Recover with Google brings back your pseudo, your photo and your published trades. Blanks keeps only a hashed Google id — never your name or email — and the name shown is always the one you pick.",
+        "html": "<b>Link with Google</b> — Track tab: attach your pseudo to your Google account. Reinstall, change computer, lose the folder: <b>Recover with Google</b> brings back your pseudo, your photo and your published trades. Blanks keeps only a hashed Google id — never your name or email — and the name shown is always the one you pick."
+      },
+      {
+        "text": "Display name — the ✎ next to your pseudo changes it. People who follow you keep following you; your old name stays reserved.",
+        "html": "<b>Display name</b> — the ✎ next to your pseudo changes it. People who follow you keep following you; your old name stays reserved."
+      },
+      {
+        "text": "Google photo — with a link, your Google photo is used until you pick one; a Google photo button brings it back any time.",
+        "html": "<b>Google photo</b> — with a link, your Google photo is used until you pick one; a <b>Google photo</b> button brings it back any time."
+      }
+    ]
+  },
+  {
+    "version": "4.17.0",
+    "title": "Faces on the chart, instant feed",
+    "items": [
+      {
+        "text": "Profile photo — Track tab → Add a photo. It replaces your initial everywhere: in your followers' feed, in their Following chips, and inside your bubbles on their chart. Shrunk to 64 px in your browser before it is sent; Remove photo takes it down.",
+        "html": "<b>Profile photo</b> — Track tab → <b>Add a photo</b>. It replaces your initial everywhere: in your followers' feed, in their Following chips, and inside your bubbles on their chart. Shrunk to 64 px in your browser before it is sent; <b>Remove photo</b> takes it down."
+      },
+      {
+        "text": "Their photo in the bubble — a followed trader's bubble now shows their photo (or their initial on their colour), ringed in teal for a buy and pink for a sell, with a small B / S badge; the hover card shows the photo too.",
+        "html": "<b>Their photo in the bubble</b> — a followed trader's bubble now shows their photo (or their initial on their colour), ringed in teal for a buy and pink for a sell, with a small B / S badge; the hover card shows the photo too."
+      },
+      {
+        "text": "Instant tracker — a trade by someone you follow reaches your feed and your chart in a fraction of a second instead of up to 5 s: Blanks keeps one request open with the server and the server answers the moment a trade is published. The 5 s check stays as a fallback.",
+        "html": "<b>Instant tracker</b> — a trade by someone you follow reaches your feed and your chart in a fraction of a second instead of up to 5 s: Blanks keeps one request open with the server and the server answers the moment a trade is published. The 5 s check stays as a fallback."
+      }
+    ]
+  },
+  {
+    "version": "4.16.0",
+    "title": "Your wallet survives updates",
+    "items": [
+      {
+        "text": "Nothing lost on update — your wallet, trades and settings are mirrored to your Google account (Chrome sync, images and sounds excepted): reinstall Blanks or install it on another computer with the same account and it comes back by itself. An extension loaded from a folder now keeps the same identity whatever the folder.",
+        "html": "<b>Nothing lost on update</b> — your wallet, trades and settings are mirrored to your Google account (Chrome sync, images and sounds excepted): reinstall Blanks or install it on another computer with the same account and it comes back by itself. An extension loaded from a folder now keeps the same identity whatever the folder."
+      },
+      {
+        "text": "Wallet popup — the toolbar popup looks like a wallet: your balance in dollars and SOL with the 24h change, available / in positions / win rate, then a Tokens tab (open positions with live value and PNL) and an Activity tab (last trades). Click a row to open the token; the Terminal / Axiom switches and Settings sit in the header.",
+        "html": "<b>Wallet popup</b> — the toolbar popup looks like a wallet: your balance in dollars and SOL with the 24h change, available / in positions / win rate, then a Tokens tab (open positions with live value and PNL) and an Activity tab (last trades). Click a row to open the token; the Terminal / Axiom switches and Settings sit in the header."
+      },
+      {
+        "text": "Market-cap orders are drawn at the right level on the chart (they were placed far above it).",
+        "html": "Market-cap orders are drawn at the right level on the chart (they were placed far above it)."
+      },
+      {
+        "text": "Dashboard — first section of the settings window: net profit over 7 days, 30 days or all time, win rate, ROI, profit factor, best and worst trade, average hold, an equity curve (cumulative PNL, hover for the value), PNL per day, and the last trades with their killcam and card.",
+        "html": "<b>Dashboard</b> — first section of the settings window: net profit over 7 days, 30 days or all time, win rate, ROI, profit factor, best and worst trade, average hold, an equity curve (cumulative PNL, hover for the value), PNL per day, and the last trades with their killcam and card."
+      },
+      {
+        "text": "Settings window — the gear opens a large window in the site's own look: numbered sections, a title and a live preview per section, mono eyebrows, green accents, and it slides in and out. A fixed Blanks button bottom-right opens a small menu — the draggable panel or the settings — on every page, trenches included; the gear docked to the balance card is gone. The toolbar popup keeps a Settings button.",
+        "html": "<b>Settings window</b> — the gear opens a large window in the site's own look: numbered sections, a title and a live preview per section, mono eyebrows, green accents, and it slides in and out. A fixed Blanks button bottom-right opens a small menu — the draggable panel or the settings — on every page, trenches included; the gear docked to the balance card is gone. The toolbar popup keeps a Settings button."
+      },
+      {
+        "text": "Tracker lists — Export list / Import list in the Track tab move the traders you follow between machines.",
+        "html": "<b>Tracker lists</b> — <b>Export list</b> / <b>Import list</b> in the Track tab move the traders you follow between machines."
+      },
+      {
+        "text": "Calendar — the last 30 days, day numbers in the cells; the PNG export shows each day's date, PNL in SOL and trade count.",
+        "html": "<b>Calendar</b> — the last 30 days, day numbers in the cells; the PNG export shows each day's date, PNL in SOL and trade count."
+      },
+      {
+        "text": "PNL card: frosted panel behind the chart with blur controls, a line or candles chart, the signature always on; clearer settings panel.",
+        "html": "PNL card: frosted panel behind the chart with blur controls, a line or candles chart, the signature always on; clearer settings panel."
+      },
+      {
+        "text": "Killcam: its own background and chart-panel settings (independent from the card), a speed button, a duration that grows with the trade, the end summary over the whole clip; the PNL pill always fits its column.",
+        "html": "Killcam: its own background and chart-panel settings (independent from the card), a speed button, a duration that grows with the trade, the end summary over the whole clip; the PNL pill always fits its column."
+      }
+    ]
+  },
+  {
+    "version": "4.14.1",
+    "title": "Market-cap orders",
+    "items": [
+      {
+        "text": "Orders in market cap — TP, SL and limit buy take a target MC (50k, 1.2m) next to % and $; previews and the order list show the MC.",
+        "html": "<b>Orders in market cap</b> — TP, SL and limit buy take a target MC (<span class=\"mono\">50k</span>, <span class=\"mono\">1.2m</span>) next to % and $; previews and the order list show the MC."
+      },
+      {
+        "text": "Limit buy amount is 0.5 SOL by default instead of an empty field that looked filled.",
+        "html": "Limit buy amount is 0.5 SOL by default instead of an empty field that looked filled."
+      },
+      {
+        "text": "PNL card back to its original layout; GIFs are 30× lighter.",
+        "html": "PNL card back to its original layout; GIFs are 30× lighter."
+      },
+      {
+        "text": "Track tab: compact Register, guides folded into Help like the other tabs.",
+        "html": "Track tab: compact Register, guides folded into Help like the other tabs."
+      },
+      {
+        "text": "Killcam price replay stays inside the real candles; panel loads even if the tab was open during an update.",
+        "html": "Killcam price replay stays inside the real candles; panel loads even if the tab was open during an update."
+      }
+    ]
+  },
+  {
+    "version": "4.14.0",
+    "title": "Tracker, killcam",
+    "items": [
+      {
+        "text": "Tracker — a pseudo (no email, no password), a Track tab, follow other Blanks traders: their trades in a feed and on your chart with the same hover card. Sharing is a switch; everything you published can be deleted.",
+        "html": "<b>Tracker</b> — a pseudo (no email, no password), a Track tab, follow other Blanks traders: their trades in a feed and on your chart with the same hover card. Sharing is a switch; everything you published can be deleted."
+      },
+      {
+        "text": "Killcam — replay a closed trade as an animated clip with live PNL, buy/sell flashes and sound; export as video or GIF.",
+        "html": "<b>Killcam</b> — replay a closed trade as an animated clip with live PNL, buy/sell flashes and sound; export as video or GIF."
+      },
+      {
+        "text": "Trade previews (tokens, fees, impact on hover) are off by default — one switch in ⚙ → Execution brings them back.",
+        "html": "Trade previews (tokens, fees, impact on hover) are off by default — one switch in ⚙ → Execution brings them back."
+      },
+      {
+        "text": "Balance card PNL is the PNL of your trades, so setting your balance by hand no longer invents a gain. Simpler Wallet settings.",
+        "html": "Balance card PNL is the PNL of your trades, so setting your balance by hand no longer invents a gain. Simpler Wallet settings."
+      }
+    ]
+  },
+  {
+    "version": "4.13.2",
+    "title": "Safer triggers",
+    "items": [
+      {
+        "text": "A TP or SL fires only after two consecutive price checks agree, and a chart tick more than 30% away from the aggregator price is ignored — a stray tick from another chart can no longer sell a position by itself.",
+        "html": "A TP or SL fires only after two consecutive price checks agree, and a chart tick more than 30% away from the aggregator price is ignored — a stray tick from another chart can no longer sell a position by itself."
+      }
+    ]
+  },
+  {
+    "version": "4.13.1",
+    "title": "Docs, cleaner icon",
+    "items": [
+      {
+        "text": "This documentation, the Dev menu and the changelog.",
+        "html": "This documentation, the Dev menu and the changelog."
+      },
+      {
+        "text": "Logo glow removed on the site and in the toolbar popup.",
+        "html": "Logo glow removed on the site and in the toolbar popup."
+      },
+      {
+        "text": "Panel screenshots on the home page open full-size.",
+        "html": "Panel screenshots on the home page open full-size."
+      }
+    ]
+  },
+  {
+    "version": "4.13.0",
+    "title": "Popup, per-site switch",
+    "items": [
+      {
+        "text": "Toolbar popup redesigned, dark, with a switch for Terminal and one for Axiom.",
+        "html": "Toolbar popup redesigned, dark, with a switch for Terminal and one for Axiom."
+      },
+      {
+        "text": "Quick-buy button shows the Blanks logo instead of an emoji.",
+        "html": "Quick-buy button shows the Blanks logo instead of an emoji."
+      },
+      {
+        "text": "Placements that overlapped their button removed; “replace theirs” keeps their exact look.",
+        "html": "Placements that overlapped their button removed; “replace theirs” keeps their exact look."
+      }
+    ]
+  },
+  {
+    "version": "4.12.x",
+    "title": "Bubbles, hover card, calendar",
+    "items": [
+      {
+        "text": "Buy / sell bubbles sit above their candle; hover opens a Terminal-style card with amount, MC and PNL.",
+        "html": "Buy / sell bubbles sit above their candle; hover opens a Terminal-style card with amount, MC and PNL."
+      },
+      {
+        "text": "Quick buy is one click by default; a gear docked to the balance card replaces the floating launcher.",
+        "html": "Quick buy is one click by default; a gear docked to the balance card replaces the floating launcher."
+      },
+      {
+        "text": "Calendar: day popup on hover and PNG export.",
+        "html": "Calendar: day popup on hover and PNG export."
+      },
+      {
+        "text": "No more Blanks button on popovers; the trenches buy refreshes the price before filling.",
+        "html": "No more Blanks button on popovers; the trenches buy refreshes the price before filling."
+      }
+    ]
+  },
+  {
+    "version": "4.11.x",
+    "title": "Axiom",
+    "items": [
+      {
+        "text": "Axiom supported: Pulse quick buy, chart bubbles, TP / SL, panel. Position is shared with Terminal.",
+        "html": "Axiom supported: Pulse quick buy, chart bubbles, TP / SL, panel. Position is shared with Terminal."
+      }
+    ]
+  },
+  {
+    "version": "4.10.2",
+    "title": "Slippage cap",
+    "items": [
+      {
+        "text": "Simulated slippage capped at 1.5% whatever the “Max slippage” setting. Before, at 100%, a two-second scalp could lose 80%.",
+        "html": "Simulated slippage capped at 1.5% whatever the “Max slippage” setting. Before, at 100%, a two-second scalp could lose 80%."
+      }
+    ]
+  },
+  {
+    "version": "4.4.2",
+    "title": "First public build",
+    "items": [
+      {
+        "text": "Panel on Terminal, realistic execution, TP / SL / limit, chart markers, stats, history, balance card, PNL card, backup.",
+        "html": "Panel on Terminal, realistic execution, TP / SL / limit, chart markers, stats, history, balance card, PNL card, backup."
+      }
+    ]
+  }
+]
