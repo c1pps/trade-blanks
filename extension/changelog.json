@@ -1,5 +1,31 @@
 [
   {
+    "version": "4.34.2",
+    "title": "Exits you can trust",
+    "items": [
+      {
+        "text": "Stops and targets follow your PnL — a TP or SL of 20% now fires when the PnL the panel shows reaches +20% or −20%, buy and sell fees included. Before, it was measured from the entry price before fees, so the result never matched the number you typed. Each active order also shows the market cap where it will fire.",
+        "html": "<b>Stops and targets follow your PnL</b> — a TP or SL of 20% now fires when the PnL the panel shows reaches +20% or −20%, buy and sell fees included. Before, it was measured from the entry price before fees, so the result never matched the number you typed. Each active order also shows the market cap where it will fire."
+      },
+      {
+        "text": "Exit lines at their real level — the TP and SL lines on the chart are drawn exactly where the order fires, and every label stays on its own line: when two are close, one moves to the side instead of sliding down.",
+        "html": "<b>Exit lines at their real level</b> — the TP and SL lines on the chart are drawn exactly where the order fires, and every label stays on its own line: when two are close, one moves to the side instead of sliding down."
+      },
+      {
+        "text": "No instant stop — a stop loss smaller than the fees you already paid would sell at once; it is no longer placed, and you get a message.",
+        "html": "<b>No instant stop</b> — a stop loss smaller than the fees you already paid would sell at once; it is no longer placed, and you get a message."
+      },
+      {
+        "text": "Untick the wallet shown — in multi-wallet, you can now untick the wallet shown in the panel: it stops trading and the next ticked wallet takes its place. A sell then only sells in the wallets still ticked.",
+        "html": "<b>Untick the wallet shown</b> — in multi-wallet, you can now untick the wallet shown in the panel: it stops trading and the next ticked wallet takes its place. A sell then only sells in the wallets still ticked."
+      },
+      {
+        "text": "Stats tidied — the Win rate, Trades and Wins / Losses tiles get the same glass as the cards, and nothing overlaps the Portfolio card in a small window.",
+        "html": "<b>Stats tidied</b> — the Win rate, Trades and Wins / Losses tiles get the same glass as the cards, and nothing overlaps the Portfolio card in a small window."
+      }
+    ]
+  },
+  {
     "version": "4.34.1",
     "title": "Instant and glassy",
     "items": [

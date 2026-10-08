@@ -400,7 +400,8 @@ BX.cmds.walletNew = async function (e) {
 };
 
 /* Afficher un wallet (clic sur sa ligne) : il devient le seul a trader, comme un
-   clic simple sur Terminal. keepSel garde la selection multiple. */
+   clic simple sur Terminal. keepSel garde la selection multiple ; sel (liste) remplace
+   la selection, l'ancien wallet affiche en sort : c'est le decochage du wallet affiche. */
 BX.cmds.walletSwitch = async function (e) {
   wInit();
   const id = e.id;
@@ -413,7 +414,8 @@ BX.cmds.walletSwitch = async function (e) {
   delete all[id];
   S.walletId = id;
   S.wallets[id].sum = wSum(S);
-  if (e.keepSel) S.walletSel = (S.walletSel || []).concat(old);
+  if (Array.isArray(e.sel)) S.walletSel = e.sel.map(String).filter((x) => x !== old);
+  else if (e.keepSel) S.walletSel = (S.walletSel || []).concat(old);
   else S.walletSel = [];
   wSelClean();
   await wSet(all);

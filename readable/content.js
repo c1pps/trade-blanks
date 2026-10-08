@@ -1599,7 +1599,7 @@
         else if ("mc" === e.mode) {
           const s = e.supply > 0 ? e.supply : u;
           t = s > 0 ? e.value / s : null;
-        } else k && (t = "tp" === e.kind ? k * (1 + e.value / 100) : k * (1 - e.value / 100));
+        } else e.lvUsd > 0 ? (t = e.lvUsd) : k && (t = "tp" === e.kind ? k * (1 + e.value / 100) : k * (1 - e.value / 100));
         return t ? { kind: e.kind, priceUsd: t, mcap: t * u } : null;
       })
       .filter(Boolean);
@@ -3439,7 +3439,7 @@
                     v = !!(e && e.tokens > 0),
                     f = (e) =>
                       "pct" === e.mode
-                        ? ("sl" === e.kind ? "−" : "+") + +e.value + "%"
+                        ? ("sl" === e.kind ? "−" : "+") + +e.value + "% PnL" + (e.lvUsd > 0 ? " · " + (r ? se(e.lvUsd * r) + " MC" : te(e.lvUsd)) : "")
                         : "mc" === e.mode
                           ? se(e.value) + " MC"
                           : r
@@ -3449,7 +3449,7 @@
                       ? p
                           .map(
                             (e, t) =>
-                              `<div class="exrow">\n        <span class="exk ${"sl" === e.k ? "sl" : "tp"}" data-i="${t}" data-tip="Take profit or stop loss — click to switch">${"sl" === e.k ? "SL" : "TP"}</span>\n        <span class="exin" data-tip="Trigger, in % from your average entry price"><i>${"sl" === e.k ? "−" : "+"}</i><input data-i="${t}" data-f="v" value="${e.v}" inputmode="decimal"><i>%</i></span>\n        <span class="exlb">sell</span>\n        <span class="exin" data-tip="Share of the position sold when it triggers"><input data-i="${t}" data-f="s" value="${e.s}" inputmode="decimal"><i>%</i></span>\n        <span class="exx" data-i="${t}" title="Remove">${At}</span>\n      </div>`,
+                              `<div class="exrow">\n        <span class="exk ${"sl" === e.k ? "sl" : "tp"}" data-i="${t}" data-tip="Take profit or stop loss — click to switch">${"sl" === e.k ? "SL" : "TP"}</span>\n        <span class="exin" data-tip="Trigger: your PnL on this position, fees included — the same % the panel shows. SL 20 sells when you are down 20%"><i>${"sl" === e.k ? "−" : "+"}</i><input data-i="${t}" data-f="v" value="${e.v}" inputmode="decimal"><i>%</i></span>\n        <span class="exlb">sell</span>\n        <span class="exin" data-tip="Share of the position sold when it triggers"><input data-i="${t}" data-f="s" value="${e.s}" inputmode="decimal"><i>%</i></span>\n        <span class="exx" data-i="${t}" title="Remove">${At}</span>\n      </div>`,
                           )
                           .join("")
                       : "",
@@ -4094,7 +4094,7 @@
             s = e.value;
           if ("pct" === e.mode) {
             const t = n.positions[e.mint];
-            s = t && t.tokens > 0 && l ? (t.costSol / t.tokens) * l * ("tp" === e.kind ? 1 + e.value / 100 : 1 - e.value / 100) : 0;
+            s = t && t.tokens > 0 ? (e.lvUsd > 0 ? e.lvUsd : l ? (t.costSol / t.tokens) * l * ("tp" === e.kind ? 1 + e.value / 100 : 1 - e.value / 100) : 0) : 0;
           }
           if ("mc" === e.mode) t = se(e.value) + " MC";
           else {

@@ -1217,8 +1217,42 @@ function triggerPrice(e, t) {
   const s = S.positions[e.mint],
     o = px(s && s.asset ? s.asset : assetAt(e.pair));
   if (!(s && s.tokens > 0 && o)) return null;
-  const a = (s.costSol / s.tokens) * o;
-  return "tp" === e.kind ? a * (1 + e.value / 100) : "sl" === e.kind ? a * (1 - e.value / 100) : null;
+  /* Un TP ou SL en % vise le PnL affiche par le panneau (frais et impact de sortie compris),
+     plus le simple prix d'achat moyen. Le niveau trouve est garde dans lvUsd. */
+  const a = t ? pnlLevel(e, t, s, o) : 0;
+  if (a > 0) return ((e.lvUsd = a), a);
+  const n = (s.costSol / s.tokens) * o,
+    r = "tp" === e.kind ? n * (1 + e.value / 100) : "sl" === e.kind ? n * (1 - e.value / 100) : null;
+  return (r > 0 && (e.lvUsd = r), r);
+}
+/* Prix auquel vendre toute la position rapporterait cout x (1 +/- value %), frais compris.
+   Recherche par dichotomie sur le prix, avec le meme moteur que les ventes. 0 si introuvable. */
+function pnlLevel(e, t, s, o) {
+  if (!(("tp" === e.kind || "sl" === e.kind) && s.costSol > 0 && +e.value > 0)) return 0;
+  const a = parseFloat(t.priceUsd);
+  if (!(a > 0)) return 0;
+  const n = s.costSol * ("tp" === e.kind ? 1 + e.value / 100 : 1 - e.value / 100);
+  if (!(n > 0)) return 0;
+  const r = chainOf(e.pair),
+    i = (e) => {
+      try {
+        const a = E.marketState(Object.assign({}, t, { priceUsd: String(e), priceNative: String(e / o) }), o, r);
+        return a ? E.exitValue(a, s.tokens, S.settings) : 0;
+      } catch (e) {
+        return 0;
+      }
+    };
+  let c = a,
+    l = a,
+    d = 0;
+  for (; i(c) > n && d < 60; d++) c /= 2;
+  for (d = 0; i(l) < n && d < 60; d++) l *= 2;
+  if (!(i(c) <= n && i(l) >= n)) return 0;
+  for (d = 0; d < 48 && l / c > 1 + 1e-7; d++) {
+    const e = Math.sqrt(c * l);
+    i(e) < n ? (c = e) : (l = e);
+  }
+  return "sl" === e.kind ? c : l;
 }
 function placeExits(e, t) {
   if (!Array.isArray(t) || !t.length) return 0;
@@ -1234,24 +1268,32 @@ function placeExits(e, t) {
     const t = i && "sl" === i.k ? "sl" : "tp",
       c = +i.v,
       l = Math.min(100, Math.max(1, +i.s || 100));
-    c > 0 &&
-      !("sl" === t && c >= 100) &&
-      (S.orders.push({
-        id: self.crypto && crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
-        createdAt: Date.now(),
-        kind: t,
-        mode: "pct",
-        value: c,
-        sizePct: l,
-        supply: 0,
-        mint: o,
-        pair: e,
-        symbol: s.baseToken.symbol,
-        chain: a,
-        asset: n,
-        auto: !0,
-      }),
-      r++);
+    if (!(c > 0) || ("sl" === t && c >= 100)) continue;
+    const d = {
+      id: self.crypto && crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random()),
+      createdAt: Date.now(),
+      kind: t,
+      mode: "pct",
+      value: c,
+      sizePct: l,
+      supply: 0,
+      mint: o,
+      pair: e,
+      symbol: s.baseToken.symbol,
+      chain: a,
+      asset: n,
+      auto: !0,
+    };
+    /* Un SL deja depasse a cause des frais se declencherait aussitot : on ne le pose pas. */
+    if ("sl" === t) {
+      const e = triggerPrice(d, s),
+        t = parseFloat(s.priceUsd);
+      if (e > 0 && t > 0 && e >= t) {
+        notify("stop loss −" + c + "% not placed: with fees this position is already lower — use a bigger %", "bad");
+        continue;
+      }
+    }
+    (S.orders.push(d), r++);
   }
   return r;
 }

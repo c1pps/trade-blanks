@@ -314,12 +314,18 @@
         F(n.priceUsd, "tp" === n.kind ? t : "sl" === n.kind ? e : "#526fff", "tp" === n.kind ? "TP" : "sl" === n.kind ? "SL" : "LIMIT", 0);
       const n = 20;
       z.sort((t, e) => t.y - e.y);
-      for (let t = 1; t < z.length; t++) {
-        const e = void 0 !== z[t].ly ? z[t].ly : z[t].y,
-          o = void 0 !== z[t - 1].ly ? z[t - 1].ly : z[t - 1].y;
-        z[t].ly = Math.max(e, o + n);
+      /* Deux etiquettes trop proches ne se poussent plus verticalement : la seconde passe
+         dans une colonne a gauche, et chaque etiquette reste a son vrai prix. */
+      (u.save(), (u.font = "500 11px " + i));
+      const W = z.reduce((t, e) => Math.max(t, u.measureText(e.txt).width + u.measureText(e.tag).width + 34), 0);
+      u.restore();
+      const C = [];
+      for (const t of z) {
+        let e = 0;
+        for (; C.some((o) => o.c === e && Math.abs(o.y - t.y) < n); ) e++;
+        ((t.c = e), C.push({ c: e, y: t.y }));
       }
-      for (const t of z) S(u, o, a, t.y, t.col, t.txt, t.tag, t.solid, t.ly);
+      for (const t of z.slice().sort((t, e) => t.c - e.c)) S(u, o - t.c * W, a, t.y, t.col, t.txt, t.tag, t.solid);
     } catch (t) {}
     /* Zones de tes trades passes sur ce token, et ligne fantome apres la vente */
     try {

@@ -262,13 +262,14 @@
 
   R.wallets = function () {
     const st = S();
+    const nsel = walletRows().filter((w) => w.sel).length;
     const rows = walletRows()
       .map(
         (w) => `<div class="bxw ${w.on ? "on" : ""}" data-id="${esc(w.id)}" style="--wc:${w.col}">
           <i class="bxwsq"></i>
           <div class="bxwn"><div class="bxwt"><b>${esc(w.name)}</b>${w.on ? '<span class="bxpill up">shown</span>' : w.sel ? '<span class="bxpill up">trading</span>' : ""}</div><small>${w.s.n} trade${w.s.n === 1 ? "" : "s"}${w.s.open ? " · " + w.s.open + " open" : ""}</small></div>
           <div class="bxwv"><b>${A.icon("SOL")}${sol(w.s.bal)}</b><small class="${tone(w.s.pnl)}">${sol(w.s.pnl, 1)} realised</small></div>
-          <div class="bxwa">${w.on ? "" : `<span class="bxbtn" data-w="use">Switch</span><span class="bxbtn" data-w="sel">${w.sel ? "Stop trading with it" : "Trade with it too"}</span>`}<span class="bxbtn" data-w="ren">Rename</span>${w.on ? "" : `<span class="bxbtn bxdel" data-w="del">Delete</span>`}</div>
+          <div class="bxwa">${w.on ? (nsel > 1 ? `<span class="bxbtn" data-w="sel">Stop trading with it</span>` : "") : `<span class="bxbtn" data-w="use">Switch</span><span class="bxbtn" data-w="sel">${w.sel ? "Stop trading with it" : "Trade with it too"}</span>`}<span class="bxbtn" data-w="ren">Rename</span>${w.on ? "" : `<span class="bxbtn bxdel" data-w="del">Delete</span>`}</div>
         </div>`,
       )
       .join("");
@@ -633,8 +634,19 @@
   }
   function wToggle(id) {
     const st = S();
-    if (!st || id === st.walletId) return;
+    if (!st) return;
     const cur = new Set(Array.isArray(st.walletSel) ? st.walletSel : []);
+    if (id === st.walletId) {
+      /* Decocher le wallet affiche : il arrete de trader, le premier wallet coche
+         prend sa place dans le panneau et les autres restent coches. */
+      const rest = [...cur].filter((x) => st.wallets && st.wallets[x]);
+      if (!rest.length) return A.toast("one wallet at least has to trade", "bad");
+      const next = rest[0];
+      st.walletSel = rest.slice(1);
+      A.send({ cmd: "walletSwitch", id: next, sel: rest.slice(1) });
+      WB && (WB.h = "");
+      return;
+    }
     cur.has(id) ? cur.delete(id) : cur.add(id);
     st.walletSel = [...cur];
     A.send({ cmd: "walletSel", ids: [...cur] });
@@ -689,7 +701,7 @@
       rows
         .map(
           (w) => `<div class="bxwr ${w.on ? "on" : ""} ${w.sel ? "sel" : ""}" data-wid="${esc(w.id)}" style="--wc:${w.col}">
-            <i class="bxwsq ${w.on ? "lock" : ""}" ${w.on ? `data-tip="The wallet shown in the panel — always trades"` : `data-wsel="${esc(w.id)}" data-tip="${w.sel ? "Stop trading with this wallet" : "Also trade with this wallet"}"`}>${w.sel ? CHECK : ""}</i>
+            <i class="bxwsq ${w.on && nsel < 2 ? "lock" : ""}" ${w.on && nsel < 2 ? `data-tip="The wallet shown in the panel — it trades"` : `data-wsel="${esc(w.id)}" data-tip="${w.sel ? "Stop trading with this wallet" : "Also trade with this wallet"}"`}>${w.sel ? CHECK : ""}</i>
             <span class="bxwrn"><b>${esc(w.name)}</b><small>${w.s.n} trade${w.s.n === 1 ? "" : "s"}${w.s.open ? " · " + w.s.open + " open" : ""}</small></span>
             <span class="bxwrb">${A.icon("SOL")}${sol(w.s.bal)}</span>
             <span class="bxwrp ${tone(w.s.pnl)}">${sol(w.s.pnl, 1)}</span>
@@ -1078,7 +1090,7 @@
   function avgPx() {
     return RP.buyTok > 0 ? RP.buyUsd / RP.buyTok : 0;
   }
-  /* Les lignes de sortie du panneau (TP / SL en % du prix moyen), recalculees a chaque achat. */
+  /* Les lignes de sortie du panneau (TP / SL en % de PnL), recalculees a chaque achat. */
   function armExits() {
     const done = new Set(RP.exits.filter((x) => x.hit).map((x) => x.k + x.v));
     RP.exits = RP.exitsOn
@@ -1087,7 +1099,11 @@
           .map((x) => ({ k: x.k === "sl" ? "sl" : "tp", v: +x.v, s: Math.min(100, Math.max(1, +x.s || 100)), hit: done.has((x.k === "sl" ? "sl" : "tp") + +x.v) }))
       : [];
   }
+  /* Comme en live depuis 4.34.2 : le % vise le PnL affiche de la position (cout avec
+     frais d'achat), pas l'ecart au prix moyen. */
   function exitLevel(x) {
+    const g = RP.cost * (x.k === "tp" ? 1 + x.v / 100 : 1 - x.v / 100);
+    if (RP.tokens > 0 && RP.cost > 0 && RP.solUsd > 0) return (g * RP.solUsd) / RP.tokens;
     const a = avgPx();
     return x.k === "tp" ? a * (1 + x.v / 100) : a * (1 - x.v / 100);
   }

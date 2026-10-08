@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Blanks — Paper Trading for Solana Terminals",
-  "version": "4.34.1",
+  "version": "4.34.2",
   "description": "Paper-trade memecoins on Solana, Ethereum, Base, Robinhood and BNB Chain: real price impact, fees, slippage. Zero risk.",
   "permissions": [
     "storage",

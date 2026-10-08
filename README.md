@@ -39,10 +39,10 @@ Blanks works with **no wallet extension installed at all** — that is the simpl
 
 ## Current release
 
-**v4.34.1** — `releases/Blanks-store-4.34.1.zip`
+**v4.34.2** — `releases/Blanks-store-4.34.2.zip`
 
 ```
-SHA-256  4bfca99f82e16af77b521e9f1ee4185e3789f8f5a1e9082b1b6c1d88e6e8d432
+SHA-256  28a2dfae6123e58d7f08e9b631a35795fc89a579bf6a04083a99ea04f53f4042
 ```
 
 ## Stay safe

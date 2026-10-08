@@ -344,3 +344,12 @@ kbd{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 
 .smodal .scont .sw.on:active::after{transform:translateX(12px)}
 .smodal details.help summary{transition:background .2s,color .2s}
 @media (prefers-reduced-motion:reduce){.smodal *{transition-duration:.01ms!important}}
+
+/* 4.34.2 Stats : les trois tuiles (win rate, trades, wins / losses) prennent le meme verre
+   que les cartes, et aucun bloc du volet ne se tasse quand la fenetre est basse (les
+   tuiles venaient recouvrir le bas de la carte Portfolio). */
+.smodal .scont .pane>*{flex-shrink:0}
+.smodal .scont .stats{gap:10px}
+.smodal .scont .stats .stat{background:var(--lq-fill);border-color:transparent!important;box-shadow:var(--lq-rim),var(--lq-drop);border-radius:18px;padding:16px 20px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.smodal .scont .stats .stat .v{font-size:20px;line-height:1.1}
+.smodal .scont .stats .stat .k{margin-top:0;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-family:ui-monospace,"Geist Mono","Geist Mono Variable",Menlo,monospace;color:var(--dim);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
